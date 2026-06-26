@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /gotime
+Sitemap: https://flamingotimellc.com/sitemap.xml

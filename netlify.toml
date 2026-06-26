@@ -1,0 +1,14 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/portal/*"
+  to = "https://portal.flamingotimellc.com/:splat"
+  status = 301
+  force = true
+
+# /gotime is gated client-side (password) + noindex; served as a static page here.
+[[headers]]
+  for = "/gotime/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"

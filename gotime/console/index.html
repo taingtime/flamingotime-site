@@ -169,6 +169,11 @@
   .clientcard .stat .n.alert{color:var(--red)} .clientcard .stat .n.warn{color:var(--amber)}
   .clientcard .stat .k{font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;margin-top:3px}
   .clientcard .statusdot{position:absolute;top:15px;right:15px;font-size:10px;font-weight:500;padding:2px 10px;border-radius:999px;background:var(--teal-wash);color:#1d6f4a}
+  .clientcard .statusdot.ev{background:var(--violet-wash);color:var(--violet)}
+  /* events-theme card (diydjparty) */
+  .clientcard.events{border-top:3px solid var(--violet);background:linear-gradient(180deg,#fbf9ff,#fff)}
+  .clientcard.events:hover{border-color:var(--violet)}
+  .clientcard.events .openhint{color:var(--violet)}
   .clientcard .openhint{font-size:11px;color:var(--flamingo);margin-top:10px;font-weight:500;opacity:0;transition:.15s}
   .clientcard:hover .openhint{opacity:1}
 
@@ -407,7 +412,7 @@ function jpost(path,body){return fetch(API+path,{method:"POST",credentials:"incl
 function jpatch(path,body){return fetch(API+path,{method:"PATCH",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});}
 
 /* in-memory state */
-let ST={contacts:[],tasks:[],invoices:[],portals:[],registry:null,canWrite:false};
+let ST={contacts:[],tasks:[],invoices:[],portals:[],djClients:[],registry:null,canWrite:false};
 
 /* ===================== helpers ===================== */
 const TODAY=new Date();
@@ -436,6 +441,8 @@ async function pull(){
     // registry via /api/registry
     const r=await fetch(API+"/api/registry",OPT);
     if(r.ok)ST.registry=(await r.json()).registry||null;
+    // diydjparty event clients (read-only here) via /api/dj-clients
+    try{const dj=await fetch(API+"/api/dj-clients",OPT);if(dj.ok)ST.djClients=(await dj.json()).clients||[];}catch(_){ST.djClients=[];}
   }catch(e){canWrite=false;}
   ST.canWrite=canWrite;
   document.body.classList.toggle("readonly",!canWrite);
@@ -468,7 +475,7 @@ function renderScorecard(){
   const outstanding=inv.filter(v=>v.status!=="void"&&v.status!=="draft").reduce((s,v)=>s+Math.max(0,(v.total||0)-(v.paid_amount||0)),0);
   const drafted=inv.filter(v=>v.status==="draft").reduce((s,v)=>s+(v.total||0),0);
   document.getElementById("scorecard").innerHTML=[
-    scCard(ST.portals.length,"Active clients","green"),
+    scCard(ST.portals.length+(ST.djClients.length?'<span style="font-size:13px;color:var(--violet)"> +'+ST.djClients.length+'🎧</span>':''),"Clients (web · events)","green"),
     scCard(overdue.length,"Overdue",overdue.length?"red":"green"),
     scCard(mine.length,"On your plate",mine.length>3?"amber":"green"),
     scCard(asks.length,"Client asks",asks.length?"amber":"green"),
@@ -489,22 +496,44 @@ function clientStats(slug){
 }
 function renderHelm(){
   const el=document.getElementById("helm-cards");
-  if(!ST.portals.length){el.innerHTML='<div class="empty">No clients yet. Add one in the Portals tab.</div>';return;}
-  el.innerHTML=ST.portals.map(p=>{
-    const s=clientStats(p.slug);const c=p.counts||{};
-    return `<div class="clientcard" onclick="openDrawer('${attr(p.slug)}')">
-      <span class="statusdot">${esc(p.status||"active")}</span>
-      <h3>${esc(p.display_name||p.slug)}</h3>
-      <div class="who">${esc(p.client_name||"")}</div>
-      <div class="stats">
-        <div class="stat"><div class="n ${s.overdue?'alert':''}">${s.yourTasks}</div><div class="k">your tasks</div></div>
-        <div class="stat"><div class="n ${s.asks?'warn':''}">${s.asks}</div><div class="k">open asks</div></div>
-        <div class="stat"><div class="n">${c.messages||0}</div><div class="k">messages</div></div>
-        <div class="stat"><div class="n ${s.outstanding?'warn':''}">${s.outstanding?money(s.outstanding):'$0'}</div><div class="k">owed</div></div>
-      </div>
-      <div class="openhint">Open workspace →</div>
-    </div>`;
-  }).join("");
+  const hasWork=ST.portals.length, hasEvents=ST.djClients.length;
+  if(!hasWork&&!hasEvents){el.innerHTML='<div class="empty">No clients yet. Add one in the Portals tab.</div>';return;}
+  let html="";
+  // web-work portals
+  if(hasWork){
+    html+=ST.portals.map(p=>{
+      const s=clientStats(p.slug);const c=p.counts||{};
+      return `<div class="clientcard" onclick="openDrawer('${attr(p.slug)}')">
+        <span class="statusdot">${esc(p.status||"active")}</span>
+        <h3>${esc(p.display_name||p.slug)}</h3>
+        <div class="who">${esc(p.client_name||"")}</div>
+        <div class="stats">
+          <div class="stat"><div class="n ${s.overdue?'alert':''}">${s.yourTasks}</div><div class="k">your tasks</div></div>
+          <div class="stat"><div class="n ${s.asks?'warn':''}">${s.asks}</div><div class="k">open asks</div></div>
+          <div class="stat"><div class="n">${c.messages||0}</div><div class="k">messages</div></div>
+          <div class="stat"><div class="n ${s.outstanding?'warn':''}">${s.outstanding?money(s.outstanding):'$0'}</div><div class="k">owed</div></div>
+        </div>
+        <div class="openhint">Open workspace →</div>
+      </div>`;
+    }).join("");
+  }
+  // diydjparty event clients (events theme)
+  if(hasEvents){
+    html+=ST.djClients.map(d=>{
+      const date=d.event_date?new Date(d.event_date+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"date TBD";
+      return `<div class="clientcard events" onclick="openDjDrawer('${attr(d.slug)}')">
+        <span class="statusdot ev">🎧 event</span>
+        <h3>${esc(d.display_name||d.slug)}</h3>
+        <div class="who">${esc(d.client_name||"")}${d.event_type?' · '+esc(d.event_type):''}</div>
+        <div class="stats">
+          <div class="stat"><div class="n" style="font-size:15px;font-family:var(--sans)">${esc(date)}</div><div class="k">event date</div></div>
+          <div class="stat"><div class="n" style="font-size:13px;font-family:var(--sans)">${d.venue?esc(d.venue.slice(0,22)):'—'}</div><div class="k">venue</div></div>
+        </div>
+        <div class="openhint">Open event →</div>
+      </div>`;
+    }).join("");
+  }
+  el.innerHTML=html;
 }
 
 /* ===================== CONTACTS ===================== */
@@ -782,7 +811,8 @@ function copyTxt(t){navigator.clipboard&&navigator.clipboard.writeText(t);toast(
 let DR_SLUG=null, DR_TAB="ov", DR_CACHE={messages:null,files:null,updates:null};
 function curPortal(){return ST.portals.find(p=>p.slug===DR_SLUG)||{};}
 function openDrawer(slug){
-  DR_SLUG=slug; DR_TAB="ov"; DR_CACHE={messages:null,files:null,updates:null};
+  DR_SLUG=slug; DJ_SLUG=null; DR_TAB="ov"; DR_CACHE={messages:null,files:null,updates:null};
+  restoreDrawerTabs();
   const p=curPortal();
   document.getElementById("dr-name").textContent=(p.display_name||slug);
   document.getElementById("dr-who").textContent=[p.client_name,p.client_email,p.client_phone].filter(Boolean).join("  ·  ");
@@ -805,7 +835,7 @@ function closeDrawer(){
   document.getElementById("drawer").classList.remove("on");
   document.getElementById("drawer").setAttribute("aria-hidden","true");
   document.getElementById("drawerScrim").classList.remove("on");
-  DR_SLUG=null;
+  DR_SLUG=null; DJ_SLUG=null; restoreDrawerTabs();
 }
 document.getElementById("dr-close").onclick=closeDrawer;
 document.getElementById("drawerScrim").onclick=closeDrawer;
@@ -963,6 +993,46 @@ async function saveUpdateDrawer(slug){
   await doSave(jpost("/api/portal-updates",{slug,title,body_md}),"Update posted",false,()=>{if(DR_SLUG===slug&&DR_TAB==="updates")drawDrUpdates();});
 }
 function emailClient(to,name,slug){ emailContact(to,name,slug); }
+
+/* ===================== DJ EVENT DRAWER (diydjparty, read-only here) ===================== */
+let DJ_SLUG=null;
+function curDj(){return ST.djClients.find(d=>d.slug===DJ_SLUG)||{};}
+function openDjDrawer(slug){
+  DJ_SLUG=slug; DR_SLUG=null;
+  const d=curDj();
+  document.getElementById("dr-name").textContent=(d.display_name||slug);
+  document.getElementById("dr-who").textContent=[d.client_name,d.client_email,d.client_phone].filter(Boolean).join("  ·  ");
+  const q=[];
+  if(d.client_email)q.push(`<button class="btn tiny" onclick="emailContact('${attr(d.client_email)}','${attr(d.display_name||slug)}',null)">✉ Email client</button>`);
+  q.push(`<a class="btn tiny neutral" href="https://diydjparty.com/client/${attr(slug)}" target="_blank" rel="noopener">Client portal ↗</a>`);
+  q.push(`<a class="btn tiny neutral" href="https://diydjparty.com/admin/" target="_blank" rel="noopener">Edit in diydjparty admin ↗</a>`);
+  document.getElementById("dr-quick").innerHTML=q.join("");
+  // events drawer = single Overview-style panel (event details + music). Hide the portal subtabs.
+  document.querySelectorAll(".dtab").forEach(t=>t.style.display="none");
+  document.querySelectorAll(".dpanel").forEach(pl=>pl.classList.remove("active"));
+  const ov=document.getElementById("dp-ov"); ov.classList.add("active");
+  const date=d.event_date?new Date(d.event_date+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"}):"date TBD";
+  ov.innerHTML=`
+    <div class="note" style="background:var(--violet-wash);border-color:#d9cffb;color:var(--violet)">🎧 <b>diydjparty event client.</b> Read-only here — booking, music queue &amp; per-event details are managed in the diydjparty admin. This view keeps the whole client list at the helm.</div>
+    <div class="dminigrid">
+      ${miniCard(esc(d.event_type||"event"),"type")}
+      ${miniCard(esc(d.status||"active"),"status",'green')}
+    </div>
+    <div class="dsec-h"><span class="t">Event details</span></div>
+    <div class="card"><div class="body" style="padding:12px 14px">
+      <div class="meta" style="font-size:13px;color:var(--ink)"><b>${esc(date)}</b></div>
+      ${d.venue?`<div class="meta" style="margin-top:5px">📍 ${esc(d.venue)}</div>`:""}
+      ${d.client_name?`<div class="meta" style="margin-top:5px">Client: ${esc(d.client_name)}</div>`:""}
+      ${d.notes?`<div class="meta" style="margin-top:7px">${esc(d.notes)}</div>`:""}
+    </div></div>
+    ${d.queue_slug?`<div class="dsec-h"><span class="t">Music</span></div>
+    <div class="card"><div class="body" style="padding:6px"><div class="row"><div class="main"><div class="ttl">🎶 Song request queue</div><div class="meta">Guests add songs at the event</div></div><div class="rowact"><a class="iconbtn" href="https://diydjparty.com/events/queue?event=${attr(d.queue_slug)}" target="_blank" rel="noopener" title="Open queue">↗</a></div></div></div></div>`:""}`;
+  document.getElementById("drawer").classList.add("on");
+  document.getElementById("drawer").setAttribute("aria-hidden","false");
+  document.getElementById("drawerScrim").classList.add("on");
+}
+// restore portal subtabs whenever a normal portal drawer opens or the drawer closes
+function restoreDrawerTabs(){document.querySelectorAll(".dtab").forEach(t=>t.style.display="");}
 
 /* ===================== MODAL plumbing ===================== */
 let MODAL_SAVE=null;

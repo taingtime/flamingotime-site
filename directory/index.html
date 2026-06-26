@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Directory — Flamingo Time</title>
+<link rel="icon" href="/assets/icons/favicon-32x32.png" sizes="32x32">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light;
+    --flamingo:#f6587d;--rose:#d9376e;--gold:#f2b441;--ink:#212e47;--ink-soft:#566079;
+    --paper:#faf3eb;--card:#fff;--line:#e8ddcf;--line-soft:#f1e8da;--chip:#f4ece0;
+    --ok:#1d9d6f;--ok-wash:#e7f7ef;--warn:#d4922a;--warn-wash:#fdf1e3;--alert:#d23a3a;--alert-wash:#fdecec;
+    --blue:#2b6cb0;--blue-wash:#ebf3fb;--violet:#7a5cff;--violet-wash:#f1edff;
+    --shadow:0 2px 14px rgba(33,46,71,.08);--shadow-lg:0 12px 40px rgba(33,46,71,.16);
+    --sans:'Poppins',ui-rounded,system-ui,sans-serif;--serif:'Fraunces',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);font-weight:300;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px}
+  a{color:var(--rose);text-decoration:none}
+
+  /* gate */
+  #gate{position:fixed;inset:0;z-index:1000;background:var(--ink);display:grid;place-items:center;padding:24px}
+  #gate .card{background:var(--paper);border-radius:24px;padding:44px 38px;max-width:410px;width:100%;text-align:center;box-shadow:var(--shadow-lg)}
+  #gate .dot{width:42px;height:42px;border-radius:50%;background:var(--flamingo);margin:0 auto 20px;position:relative;box-shadow:0 0 0 6px #fff0f5}
+  #gate .dot::after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:var(--paper);top:12px;left:16px}
+  #gate h1{font-family:var(--serif);font-weight:300;font-size:27px;margin-bottom:5px}
+  #gate h1 em{font-style:italic;color:var(--flamingo)}
+  #gate .sub{color:var(--ink-soft);font-size:13px;margin-bottom:24px}
+  #gate input{width:100%;padding:13px 15px;border:1.5px solid var(--line);border-radius:11px;font-family:var(--sans);font-size:15px;text-align:center;letter-spacing:1px}
+  #gate input:focus{outline:none;border-color:var(--flamingo)}
+  #gate button{width:100%;margin-top:11px;padding:13px;border:none;border-radius:11px;background:var(--flamingo);color:#fff;font-weight:500;font-size:15px;cursor:pointer}
+  #gate .hint{margin-top:18px;font-size:12.5px;color:var(--ink-soft)}
+  #gate .err{color:var(--alert);font-size:13px;margin-top:10px;min-height:15px}
+
+  #app{display:none}
+  header.top{position:sticky;top:0;z-index:30;background:rgba(250,243,235,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 22px}
+  .top .row1{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:500;font-size:15px}
+  .brand .dot{width:28px;height:28px;border-radius:50%;background:var(--flamingo);position:relative;box-shadow:0 0 0 4px #fff0f5}
+  .brand .dot::after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--paper);top:7px;left:10px}
+  .brand b{font-family:var(--serif);font-weight:400} .brand .t{font-size:11px;color:var(--ink-soft);font-weight:400}
+  .topbtns{display:flex;gap:8px;flex-wrap:wrap}
+  .tbtn{font-size:12.5px;font-weight:500;padding:8px 13px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-family:var(--sans);text-decoration:none}
+  .tbtn:hover{border-color:var(--flamingo);color:var(--flamingo)}
+  .tbtn.solid{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+  .search{flex:1;min-width:200px;position:relative}
+  .search input{width:100%;padding:10px 14px 10px 34px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--sans);font-size:14px;background:#fff}
+  .search input:focus{outline:none;border-color:var(--flamingo)}
+  .search::before{content:"🔍";position:absolute;left:11px;top:9px;font-size:13px;opacity:.5}
+  select.filter{padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--sans);font-size:13px;background:#fff;color:var(--ink);cursor:pointer}
+  .freshness{font-size:11.5px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px}
+  .freshness .d{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+  .freshness.snap .d{background:var(--warn)}
+
+  .wrap{padding:18px 22px 70px;max-width:1280px;margin:0 auto}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-size:12.5px}
+  .stat b{font-family:var(--serif);font-size:17px;font-weight:400;margin-right:5px}
+
+  /* bulk bar */
+  .bulkbar{display:none;align-items:center;gap:10px;background:var(--violet-wash);border:1px solid #d9cffb;border-radius:12px;padding:10px 15px;margin-bottom:12px;flex-wrap:wrap;font-size:13px;color:var(--violet)}
+  .bulkbar.show{display:flex}
+  .bulkbar input,.bulkbar select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-family:var(--sans);font-size:12.5px;background:#fff;color:var(--ink)}
+  .bulkbar button{font-size:12px;font-weight:500;padding:7px 12px;border-radius:8px;border:none;cursor:pointer;background:var(--violet);color:#fff;font-family:var(--sans)}
+  .bulkbar button.ghost{background:#fff;color:var(--violet);border:1px solid var(--violet)}
+
+  /* table */
+  .tablewrap{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{position:sticky;top:0;background:var(--chip);text-align:left;padding:10px 12px;font-weight:500;font-size:11.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;white-space:nowrap;border-bottom:1px solid var(--line)}
+  thead th:hover{color:var(--flamingo)}
+  thead th .ar{opacity:.5;font-size:10px}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+  tbody tr:hover{background:var(--paper)}
+  tbody tr.sel{background:var(--violet-wash)}
+  .nm{font-weight:500} .nm .biz{font-weight:300;color:var(--ink-soft);font-size:12px}
+  .typ{font-size:11px;font-weight:500;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .typ.Client{background:var(--ok-wash);color:#1d6f4a}.typ.Prospect{background:var(--warn-wash);color:var(--warn)}
+  .typ.Lead{background:var(--warn-wash);color:var(--warn)}.typ.Vendor{background:var(--blue-wash);color:var(--blue)}
+  .typ.Collaborator{background:var(--violet-wash);color:var(--violet)}.typ.Colleague{background:var(--chip);color:var(--ink-soft)}
+  .typ.Connection{background:var(--chip);color:var(--ink-soft)}.typ.Personal{background:#f0f0f0;color:#888}
+  .tg{display:inline-block;font-size:10.5px;background:var(--chip);color:var(--ink-soft);padding:1px 7px;border-radius:999px;margin:1px 2px 1px 0}
+  .chan{font-size:11px;color:var(--ink-soft)}
+  .rowbtn{font-size:11px;font-weight:500;padding:4px 9px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-family:var(--sans)}
+  .rowbtn:hover{border-color:var(--flamingo);color:var(--flamingo)}
+  td.chk{width:34px;text-align:center} input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--flamingo)}
+  .empty{padding:40px;text-align:center;color:var(--ink-soft)}
+
+  /* event modal */
+  #evModal{display:none;position:fixed;inset:0;z-index:200;background:rgba(33,46,71,.5);place-items:center;padding:24px}
+  #evModal.show{display:grid}
+  #evModal .box{background:var(--paper);border-radius:20px;padding:30px;max-width:460px;width:100%;box-shadow:var(--shadow-lg)}
+  #evModal h3{font-family:var(--serif);font-weight:400;font-size:21px;margin-bottom:6px}
+  #evModal p{font-size:13px;color:var(--ink-soft);margin-bottom:18px}
+  #evModal label{display:block;font-size:12px;font-weight:500;margin:12px 0 5px;color:var(--ink-soft)}
+  #evModal input,#evModal select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--sans);font-size:14px;background:#fff}
+  #evModal .acts{display:flex;gap:10px;margin-top:20px}
+  #evModal button{flex:1;padding:11px;border:none;border-radius:10px;font-weight:500;cursor:pointer;font-family:var(--sans)}
+  #evModal .go{background:var(--flamingo);color:#fff} #evModal .cancel{background:#fff;border:1px solid var(--line);color:var(--ink-soft)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 20px;border-radius:999px;font-size:13px;z-index:300;opacity:0;transition:opacity .3s;box-shadow:var(--shadow-lg)}
+  .toast.show{opacity:1}
+  .demo-note{background:var(--warn-wash);border:1px solid #f0d3a8;color:#9a5b16;font-size:12.5px;padding:9px 13px;border-radius:10px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="card">
+    <div class="dot"></div>
+    <h1>Flamingo <em>Directory</em></h1>
+    <div class="sub">Central contact database · admin</div>
+    <input id="pw" type="password" placeholder="passphrase" autofocus>
+    <button id="enter">Enter →</button>
+    <div class="err" id="gerr"></div>
+    <div class="hint">Hint: <b>What would Sue do for me?</b> · <a href="mailto:yongsnewemail@gmail.com?subject=Directory%20access">Request →</a></div>
+  </div>
+</div>
+
+<div id="app">
+  <header class="top">
+    <div class="row1">
+      <div class="brand"><span class="dot"></span> <div><b>Flamingo</b> Directory<div class="t">central contacts · vendors · clients · network</div></div></div>
+      <div class="topbtns">
+        <span class="freshness" id="fresh"><span class="d"></span><span id="freshtxt">…</span></span>
+        <a class="tbtn" href="/gotime/">← Command center</a>
+        <button class="tbtn solid" id="addBtn">+ Add contact</button>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="search"><input id="q" placeholder="Search name, business, email, phone, tag…"></div>
+      <select class="filter" id="fType"><option value="">All types</option></select>
+      <select class="filter" id="fTag"><option value="">All tags</option></select>
+      <select class="filter" id="fChan"><option value="">Any channel</option><option value="email">Has email</option><option value="sms">Has phone/SMS</option></select>
+      <select class="filter" id="fArch"><option value="active">Active</option><option value="all">Incl. archived</option></select>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="demo-note" id="demoNote" style="display:none">✦ Showing a sample — sign in at the command center (admin) so this page can read the live 475-contact database.</div>
+    <div class="stats" id="stats"></div>
+
+    <div class="bulkbar" id="bulkbar">
+      <span id="selCount">0 selected</span>
+      <input id="bulkTag" placeholder="tag to add/remove">
+      <button id="bulkAddTag">+ Tag</button>
+      <button class="ghost" id="bulkRemTag">− Tag</button>
+      <select id="bulkRole"><option value="">role…</option><option>client</option><option>vendor</option><option>dj</option><option>photographer</option><option>planner</option><option>guest</option><option>staff</option><option>poc</option><option>other</option></select>
+      <input id="bulkEvent" placeholder="event ref (slug)">
+      <button id="bulkLink">→ Add to event</button>
+      <button class="ghost" id="clearSel">Clear</button>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th class="chk"><input type="checkbox" id="selAll"></th>
+          <th data-sort="name">Name <span class="ar">↕</span></th>
+          <th data-sort="type">Type <span class="ar">↕</span></th>
+          <th data-sort="business">Business <span class="ar">↕</span></th>
+          <th>Tags</th>
+          <th>Channels</th>
+          <th data-sort="last_contact">Last contact <span class="ar">↕</span></th>
+          <th></th>
+        </tr></thead>
+        <tbody id="rows"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="evModal"><div class="box">
+  <h3>Add to event</h3>
+  <p id="evWho"></p>
+  <label>Event reference (slug)</label>
+  <input id="evRef" placeholder="e.g. sarah-mike-wedding">
+  <label>Role</label>
+  <select id="evRole"><option>client</option><option>vendor</option><option>dj</option><option>photographer</option><option>planner</option><option selected>guest</option><option>staff</option><option>poc</option><option>other</option></select>
+  <label>Role detail (optional)</label>
+  <input id="evDetail" placeholder="e.g. Lead photographer">
+  <div class="acts"><button class="cancel" id="evCancel">Cancel</button><button class="go" id="evGo">Add →</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---- gate ---- */
+const PW_HASH="04c656a456c92c75d48098ba0cc7d6d6842f147026f2549ebb58e1d17752adac";
+async function sha256(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
+async function tryEnter(){if(await sha256(document.getElementById("pw").value)===PW_HASH){sessionStorage.setItem("ft_dir_ok","1");open_();}else document.getElementById("gerr").textContent="Think: what would Sue do?";}
+function open_(){document.getElementById("gate").style.display="none";document.getElementById("app").style.display="block";boot();}
+document.getElementById("enter").onclick=tryEnter;
+document.getElementById("pw").addEventListener("keydown",e=>{if(e.key==="Enter")tryEnter();});
+if(sessionStorage.getItem("ft_dir_ok")==="1")window.addEventListener("DOMContentLoaded",open_);
+
+/* ---- data ---- */
+const API="https://yongtaing.com";
+let ALL=[], LIVE=false, sortKey="name", sortDir=1, selected=new Set();
+const SNAP=[
+  {id:"d1",name:"Steve Kaiser",type:"Vendor",business:"Kaiser Associates PR",email:"steve@kaiserassociatespr.com",phone:"(410) 555-0143",tags:["vendor","pr","local-vendor"],vectors:["Events industry"],channels:["email","call"],last_contact:"2026-06-10"},
+  {id:"d2",name:"Papi's Tacos",type:"Connection",business:"Papi's Tacos (Fells Point)",email:"",phone:"(410) 555-0182",tags:["local-venue","events","catering"],vectors:["Local businesses (Baltimore)"],channels:["call"],last_contact:null},
+  {id:"d3",name:"James Medows",type:"Client",business:"Law Office of James Medows",email:"jamesmedows@gmail.com",phone:"(917) 856-1247",tags:["active-deal","web-design"],vectors:["Web Design clients"],channels:["email","sms"],last_contact:"2026-06-04"},
+  {id:"d4",name:"Baroody Vineyards",type:"Prospect",business:"Baroody Vineyards",email:"",phone:"(540) 555-0117",tags:["local-venue","warm-lead","events"],vectors:["Local venues"],channels:["call"],last_contact:null},
+  {id:"d5",name:"NEOM Studios",type:"Collaborator",business:"NEOM Studios",email:"hello@neomstudios.com",phone:"",tags:["creative","web-platform"],vectors:["Creative talent"],channels:["email"],last_contact:"2026-05-20"},
+];
+
+function esc(s){return(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+
+async function boot(){
+  try{
+    const r=await fetch(API+"/api/crm",{credentials:"include",cache:"no-store"});
+    if(!r.ok)throw 0;
+    ALL=(await r.json()).contacts||[]; LIVE=true;
+    document.getElementById("freshtxt").textContent="Live · "+ALL.length+" contacts";
+    document.getElementById("fresh").classList.remove("snap");
+  }catch(e){
+    ALL=SNAP; LIVE=false;
+    document.getElementById("freshtxt").textContent="Snapshot (sign in for live)";
+    document.getElementById("fresh").classList.add("snap");
+    document.getElementById("demoNote").style.display="block";
+  }
+  buildFilters(); paint();
+}
+
+function buildFilters(){
+  const types=[...new Set(ALL.map(c=>c.type).filter(Boolean))].sort();
+  document.getElementById("fType").innerHTML='<option value="">All types ('+ALL.length+')</option>'+types.map(t=>`<option>${esc(t)}</option>`).join("");
+  const tagCount={}; ALL.forEach(c=>(c.tags||[]).forEach(t=>tagCount[t]=(tagCount[t]||0)+1));
+  const tags=Object.entries(tagCount).sort((a,b)=>b[1]-a[1]).slice(0,60);
+  document.getElementById("fTag").innerHTML='<option value="">All tags</option>'+tags.map(([t,n])=>`<option value="${esc(t)}">${esc(t)} (${n})</option>`).join("");
+}
+
+function filtered(){
+  const q=document.getElementById("q").value.toLowerCase().trim();
+  const ty=document.getElementById("fType").value, tg=document.getElementById("fTag").value;
+  const ch=document.getElementById("fChan").value, ar=document.getElementById("fArch").value;
+  let list=ALL.filter(c=>{
+    if(ar==="active"&&c.archived)return false;
+    if(ty&&c.type!==ty)return false;
+    if(tg&&!(c.tags||[]).includes(tg))return false;
+    if(ch==="email"&&!(c.email&&c.email.trim()))return false;
+    if(ch==="sms"&&!(c.phone&&c.phone.trim()))return false;
+    if(q){const hay=[c.name,c.business,c.email,c.phone,(c.tags||[]).join(" "),(c.vectors||[]).join(" "),c.context].join(" ").toLowerCase();if(!hay.includes(q))return false;}
+    return true;
+  });
+  list.sort((a,b)=>{let x=a[sortKey],y=b[sortKey];if(x==null)return 1;if(y==null)return -1;return String(x).localeCompare(String(y))*sortDir;});
+  return list;
+}
+
+function paint(){
+  const list=filtered();
+  document.getElementById("stats").innerHTML=
+    `<div class="stat"><b>${list.length}</b>shown</div>`+
+    `<div class="stat"><b>${ALL.length}</b>total</div>`+
+    `<div class="stat"><b>${ALL.filter(c=>c.type==="Client").length}</b>clients</div>`+
+    `<div class="stat"><b>${ALL.filter(c=>(c.tags||[]).includes("vendor")||c.type==="Vendor").length}</b>vendors</div>`+
+    `<div class="stat"><b>${ALL.filter(c=>c.email&&c.email.trim()).length}</b>emailable</div>`+
+    `<div class="stat"><b>${ALL.filter(c=>c.phone&&c.phone.trim()).length}</b>textable</div>`;
+  const rows=document.getElementById("rows");
+  if(!list.length){rows.innerHTML='<tr><td colspan="8" class="empty">No contacts match.</td></tr>';return;}
+  rows.innerHTML=list.map(c=>{
+    const tags=(c.tags||[]).slice(0,4).map(t=>`<span class="tg">${esc(t)}</span>`).join("")+((c.tags||[]).length>4?`<span class="tg">+${c.tags.length-4}</span>`:"");
+    const ch=[c.email&&c.email.trim()?"✉":"",c.phone&&c.phone.trim()?"📱":""].filter(Boolean).join(" ");
+    return `<tr class="${selected.has(c.id)?'sel':''}" data-id="${esc(c.id)}">
+      <td class="chk"><input type="checkbox" ${selected.has(c.id)?"checked":""} onchange="toggleSel('${esc(c.id)}')"></td>
+      <td><div class="nm">${esc(c.name)}${c.title?` <span class="biz">· ${esc(c.title)}</span>`:""}</div></td>
+      <td><span class="typ ${esc(c.type)}">${esc(c.type||"—")}</span></td>
+      <td>${esc(c.business||"")}</td>
+      <td>${tags||'<span style="color:#bbb">—</span>'}</td>
+      <td class="chan">${ch||'<span style="color:#bbb">—</span>'}</td>
+      <td>${c.last_contact?esc(c.last_contact):'<span style="color:#bbb">—</span>'}</td>
+      <td><button class="rowbtn" onclick="openEvent('${esc(c.id)}')">→ Event</button></td>
+    </tr>`;
+  }).join("");
+  updateBulk();
+}
+
+window.toggleSel=id=>{selected.has(id)?selected.delete(id):selected.add(id);paint();};
+function updateBulk(){
+  const bb=document.getElementById("bulkbar");
+  bb.classList.toggle("show",selected.size>0);
+  document.getElementById("selCount").textContent=selected.size+" selected";
+}
+document.getElementById("selAll").onchange=e=>{const l=filtered();if(e.target.checked)l.forEach(c=>selected.add(c.id));else selected.clear();paint();};
+document.getElementById("clearSel").onclick=()=>{selected.clear();paint();};
+
+["q","fType","fTag","fChan","fArch"].forEach(id=>document.getElementById(id).addEventListener("input",paint));
+document.querySelectorAll("thead th[data-sort]").forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1;}paint();});
+
+/* bulk tag */
+async function bulkTag(remove){
+  const tag=document.getElementById("bulkTag").value.trim();
+  if(!tag||!selected.size)return toast("Pick contacts + a tag");
+  if(!LIVE)return toast("Sign in (live) to edit");
+  try{const r=await fetch(API+"/api/crm",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"bulkTag",ids:[...selected],tag,remove})});if(!r.ok)throw 0;toast((remove?"Removed":"Added")+` tag "${tag}" on ${selected.size}`);boot();}catch(e){toast("Failed");}
+}
+document.getElementById("bulkAddTag").onclick=()=>bulkTag(false);
+document.getElementById("bulkRemTag").onclick=()=>bulkTag(true);
+
+/* bulk add-to-event */
+document.getElementById("bulkLink").onclick=async()=>{
+  const ev=document.getElementById("bulkEvent").value.trim(), role=document.getElementById("bulkRole").value||"guest";
+  if(!ev||!selected.size)return toast("Pick contacts + an event ref");
+  if(!LIVE)return toast("Sign in (live) to link");
+  let n=0;
+  for(const id of selected){try{const r=await fetch(API+"/api/crm",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"linkEvent",event_ref:ev,contact_id:id,role})});if(r.ok)n++;}catch(e){}}
+  toast(`Added ${n} to "${ev}" as ${role}`);
+};
+
+/* single event modal */
+let evContact=null;
+window.openEvent=id=>{evContact=ALL.find(c=>c.id===id);document.getElementById("evWho").textContent=evContact?evContact.name+(evContact.business?" · "+evContact.business:""):"";document.getElementById("evModal").classList.add("show");};
+document.getElementById("evCancel").onclick=()=>document.getElementById("evModal").classList.remove("show");
+document.getElementById("evGo").onclick=async()=>{
+  const ev=document.getElementById("evRef").value.trim(),role=document.getElementById("evRole").value,detail=document.getElementById("evDetail").value.trim();
+  if(!ev)return toast("Event ref required");
+  if(!LIVE)return toast("Sign in (live) to link");
+  try{const r=await fetch(API+"/api/crm",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"linkEvent",event_ref:ev,contact_id:evContact.id,role,role_detail:detail})});if(!r.ok)throw 0;toast(`${evContact.name} → ${ev} (${role})`);document.getElementById("evModal").classList.remove("show");}catch(e){toast("Failed");}
+};
+document.getElementById("addBtn").onclick=()=>toast("Use the command center CRM panel to add — full add form coming to this page");
+</script>
+</body>
+</html>

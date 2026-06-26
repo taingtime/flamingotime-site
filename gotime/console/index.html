@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>console · Flamingo Time</title>
+<link rel="icon" href="/assets/icons/favicon-32x32.png" sizes="32x32">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --flamingo:#f6587d; --rose:#d9376e; --ink:#212e47; --ink-soft:#566079;
+    --gold:#f2b441; --cream:#faf3eb; --cream-deep:#f3e9da; --soft-pink:#fff0f5; --white:#ffffff;
+    --line:#e8ddcf; --line-soft:#f1e8da;
+    --teal:#1d9d6f; --teal-wash:#e7f7ef; --amber:#d4922a; --amber-wash:#fdf1e3;
+    --red:#d23a3a; --red-wash:#fdecec; --blue:#2b6cb0; --blue-wash:#ebf3fb; --violet:#7a5cff; --violet-wash:#f1edff;
+    --chip:#f4ece0; --shadow:0 2px 14px rgba(33,46,71,.08); --shadow-lg:0 12px 40px rgba(33,46,71,.14);
+    --radius:16px; --radius-sm:10px;
+    --sans:'Poppins',ui-rounded,system-ui,sans-serif; --serif:'Fraunces',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);font-weight:300;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
+  a{color:var(--rose);text-decoration:none} a:hover{text-decoration:underline}
+
+  /* ---------- GATE ---------- */
+  #gate{position:fixed;inset:0;z-index:1000;background:var(--ink);display:grid;place-items:center;padding:24px}
+  #gate .card{background:var(--cream);border-radius:24px;padding:46px 40px;max-width:420px;width:100%;text-align:center;box-shadow:var(--shadow-lg)}
+  #gate .dot{width:46px;height:46px;border-radius:50%;background:var(--flamingo);margin:0 auto 22px;position:relative;box-shadow:0 0 0 6px var(--soft-pink)}
+  #gate .dot::after{content:"";position:absolute;width:10px;height:10px;border-radius:50%;background:var(--cream);top:13px;left:17px}
+  #gate h1{font-family:var(--serif);font-weight:300;font-size:30px;letter-spacing:-.5px;margin-bottom:6px}
+  #gate h1 em{font-style:italic;color:var(--flamingo)}
+  #gate .sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:26px;letter-spacing:.3px}
+  #gate input{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;font-family:var(--sans);font-size:15px;background:var(--white);text-align:center;letter-spacing:1px}
+  #gate input:focus{outline:none;border-color:var(--flamingo)}
+  #gate button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:12px;background:var(--flamingo);color:#fff;font-family:var(--sans);font-weight:500;font-size:15px;cursor:pointer;transition:transform .15s,background .2s}
+  #gate button:hover{background:var(--rose);transform:translateY(-1px)}
+  #gate .hint{margin-top:20px;font-size:12.5px;color:var(--ink-soft)}
+  #gate .hint b{color:var(--ink)}
+  #gate .req{margin-top:10px;font-size:12px}
+  #gate .err{color:var(--red);font-size:13px;margin-top:12px;min-height:16px}
+
+  /* ---------- shell ---------- */
+  #app{display:none;max-width:1180px;margin:0 auto;padding:20px 22px 70px}
+  header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .brandline{display:flex;align-items:center;gap:11px}
+  .brandline .dot{width:34px;height:34px;border-radius:50%;background:var(--flamingo);position:relative;flex:0 0 auto;box-shadow:0 0 0 5px var(--soft-pink)}
+  .brandline .dot::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--cream);top:9px;left:13px}
+  h1.title{font-family:var(--serif);font-weight:300;font-size:27px;letter-spacing:-.5px;line-height:1.1}
+  h1.title em{font-style:italic;color:var(--flamingo)}
+  .title-sub{font-size:12.5px;color:var(--ink-soft);margin-top:1px;letter-spacing:.3px}
+  .topbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tbtn{font-size:12.5px;font-weight:500;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--white);color:var(--ink);cursor:pointer;font-family:var(--sans);transition:all .2s;text-decoration:none}
+  .tbtn:hover{border-color:var(--flamingo);color:var(--flamingo);text-decoration:none}
+  .tbtn.solid{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+  .tbtn.solid:hover{background:var(--flamingo);border-color:var(--flamingo);color:#fff}
+
+  /* read-only banner when not signed into admin */
+  .robar{display:none;align-items:center;gap:10px;background:var(--amber-wash);border:1px solid #f0d3a8;border-radius:12px;padding:10px 15px;margin:12px 0 4px;font-size:12.5px;color:#9a5b16}
+  body.readonly .robar{display:flex}
+  body.readonly .writeUI{opacity:.4;pointer-events:none}
+
+  .freshness{display:inline-flex;align-items:center;gap:8px;margin:12px 10px 4px 0;padding:6px 13px;border-radius:999px;font:500 12.5px/1 var(--sans);border:1px solid var(--line);background:#fff;color:#3a3026;box-shadow:var(--shadow)}
+  .freshness .fdot{width:9px;height:9px;border-radius:50%;background:#9a8d7d;flex:0 0 auto}
+  .freshness .fbtn{appearance:none;border:0;background:transparent;color:inherit;cursor:pointer;font-size:13px;padding:2px;opacity:.6}
+  .freshness .fbtn:hover{opacity:1}
+  .freshness[data-state="live"]{background:var(--teal-wash);border-color:#a9e3c6;color:#1d6f4a}
+  .freshness[data-state="live"] .fdot{background:var(--teal);animation:fpulse 2.4s ease-in-out infinite}
+  .freshness[data-state="snapshot"]{background:var(--amber-wash);border-color:#f0d3a8;color:#9a5b16}
+  .freshness[data-state="snapshot"] .fdot{background:var(--amber)}
+  .freshness[data-state="error"]{background:var(--red-wash);border-color:#f3bcbc;color:#a32a2a}
+  @keyframes fpulse{0%,100%{box-shadow:0 0 0 0 rgba(29,157,111,.5)}50%{box-shadow:0 0 0 5px rgba(29,157,111,0)}}
+
+  /* ---------- scorecard ---------- */
+  .sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:10px}
+  .sc{background:var(--white);border:1px solid var(--line);border-radius:13px;padding:12px 13px;position:relative;overflow:hidden}
+  .sc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--g,var(--flamingo))}
+  .sc .v{font-family:var(--serif);font-weight:400;font-size:23px;letter-spacing:-.5px;line-height:1}
+  .sc .k{font-size:10.5px;color:var(--ink-soft);margin-top:5px}
+  .sc.red::before{background:var(--red)} .sc.red .v{color:var(--red)}
+  .sc.amber::before{background:var(--amber)} .sc.amber .v{color:var(--amber)}
+  .sc.green::before{background:var(--teal)} .sc.green .v{color:var(--teal)}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:5px;flex-wrap:wrap;margin:18px 0 16px;border-bottom:1px solid var(--line)}
+  .tab{appearance:none;border:0;background:transparent;font-family:var(--sans);font-weight:500;font-size:13.5px;color:var(--ink-soft);padding:10px 15px;border-radius:11px 11px 0 0;cursor:pointer;position:relative;top:1px;border:1px solid transparent;border-bottom:none}
+  .tab[aria-selected="true"]{color:var(--flamingo);background:var(--white);border-color:var(--line);box-shadow:0 -2px 0 var(--flamingo) inset}
+  .tab .badge{display:inline-block;min-width:18px;padding:1px 6px;margin-left:5px;border-radius:999px;font-size:11px;background:var(--chip);color:var(--ink-soft)}
+  .panel{display:none;animation:fade .25s ease} .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+
+  /* ---------- toolbar within a tab ---------- */
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .toolbar .grow{flex:1;min-width:160px}
+  .search{width:100%;padding:9px 13px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--sans);font-size:13.5px;background:#fff}
+  .search:focus{outline:none;border-color:var(--flamingo)}
+  select.filter{padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--sans);font-size:13px;background:#fff;color:var(--ink)}
+  .btn{font-size:13px;font-weight:500;padding:9px 15px;border-radius:10px;border:1.5px solid var(--flamingo);background:var(--flamingo);color:#fff;cursor:pointer;font-family:var(--sans);transition:all .15s}
+  .btn:hover{background:var(--rose);border-color:var(--rose)}
+  .btn.ghost{background:#fff;color:var(--flamingo)}
+  .btn.ghost:hover{background:var(--soft-pink)}
+  .btn.tiny{padding:5px 10px;font-size:12px;border-radius:8px}
+  .btn.neutral{border-color:var(--line);background:#fff;color:var(--ink)}
+  .btn.neutral:hover{border-color:var(--ink);background:var(--cream)}
+  .btn:disabled{opacity:.5;cursor:wait}
+
+  /* ---------- cards / rows ---------- */
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .card>h2{font-family:var(--serif);font-weight:400;font-size:16px;margin:0;padding:14px 17px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between;gap:8px;letter-spacing:-.2px}
+  .card>h2 .count{font-size:12px;font-weight:300;color:var(--ink-soft);font-family:var(--sans)}
+  .card .body{padding:6px}
+  .empty{padding:22px 16px;color:var(--ink-soft);font-size:13px;text-align:center}
+
+  .row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm)}
+  .row+.row{border-top:1px solid var(--line-soft)}
+  .row:hover{background:var(--cream)}
+  .row .main{flex:1;min-width:0}
+  .row .ttl{font-size:13.5px;font-weight:400;color:var(--ink)}
+  .row .meta{font-size:11.5px;color:var(--ink-soft);margin-top:3px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .row .rowact{flex:0 0 auto;display:flex;gap:6px}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .pill.client{background:var(--blue-wash);color:var(--blue)} .pill.yong{background:var(--soft-pink);color:var(--rose)}
+  .pill.over{background:var(--red-wash);color:var(--red)} .pill.soon{background:var(--amber-wash);color:var(--amber)}
+  .pill.ok{background:var(--teal-wash);color:#1d6f4a} .pill.slug{background:var(--chip);color:var(--ink-soft)}
+  .pill.resp{background:var(--violet-wash);color:var(--violet)} .pill.type{background:var(--violet-wash);color:var(--violet)}
+  .resp-txt{font-size:11.5px;color:var(--ink-soft);margin-top:3px;font-style:italic}
+  .iconbtn{appearance:none;border:1px solid var(--line);background:#fff;width:28px;height:28px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--ink-soft)}
+  .iconbtn:hover{border-color:var(--flamingo);color:var(--flamingo)}
+  .iconbtn.done{border-color:var(--teal);background:var(--teal-wash);color:#1d6f4a}
+  .iconbtn.done:hover{background:var(--teal);color:#fff}
+
+  /* ---------- modal / drawer ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(33,46,71,.45);z-index:1100;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+  .scrim.on{display:flex}
+  .modal{background:var(--white);border-radius:18px;box-shadow:var(--shadow-lg);max-width:540px;width:100%;overflow:hidden;animation:pop .2s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
+  .modal h3{font-family:var(--serif);font-weight:400;font-size:19px;padding:18px 22px;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;align-items:center}
+  .modal h3 .x{cursor:pointer;font-size:22px;color:var(--ink-soft);line-height:1}
+  .modal .mbody{padding:18px 22px;max-height:64vh;overflow-y:auto}
+  .modal .mfoot{padding:14px 22px;border-top:1px solid var(--line-soft);display:flex;gap:10px;justify-content:flex-end;background:var(--cream)}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--ink-soft);margin-bottom:5px;letter-spacing:.2px}
+  .field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--sans);font-size:14px;background:#fff;color:var(--ink)}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--flamingo)}
+  .field textarea{resize:vertical;min-height:74px}
+  .field .hintline{font-size:11px;color:var(--ink-soft);margin-top:4px}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .chip{font-size:11.5px;padding:4px 10px;border-radius:999px;background:var(--cream);border:1px solid var(--line);cursor:pointer}
+  .chip.on{background:var(--flamingo);color:#fff;border-color:var(--flamingo)}
+  .merr{color:var(--red);font-size:12.5px;min-height:16px;margin-right:auto;align-self:center}
+
+  .note{background:var(--soft-pink);border:1px solid #ffd4e2;border-radius:var(--radius-sm);padding:10px 13px;font-size:12.5px;color:#8a2b50;margin-bottom:14px}
+  .note.blue{background:var(--blue-wash);border-color:#cfe0f3;color:#1f4d7a}
+  .warn{background:var(--red-wash);border:1px solid #f3bcbc;border-radius:var(--radius-sm);padding:9px 13px;font-size:12px;color:#8a2a2a;font-weight:500;margin-bottom:14px}
+  code{background:var(--chip);padding:1px 6px;border-radius:5px;font-size:12px;cursor:pointer}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:1200;box-shadow:var(--shadow-lg)}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--red)}
+
+  /* ---------- CLIENTS helm grid ---------- */
+  .clients{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
+  .clientcard{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;box-shadow:var(--shadow);position:relative;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}
+  .clientcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--flamingo)}
+  .clientcard h3{font-family:var(--serif);font-weight:400;font-size:17px;margin-bottom:1px;padding-right:64px}
+  .clientcard .who{font-size:12px;color:var(--ink-soft);margin-bottom:11px}
+  .clientcard .stats{display:flex;gap:16px;margin:11px 0 4px}
+  .clientcard .stat .n{font-family:var(--serif);font-size:21px;font-weight:400;line-height:1}
+  .clientcard .stat .n.alert{color:var(--red)} .clientcard .stat .n.warn{color:var(--amber)}
+  .clientcard .stat .k{font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;margin-top:3px}
+  .clientcard .statusdot{position:absolute;top:15px;right:15px;font-size:10px;font-weight:500;padding:2px 10px;border-radius:999px;background:var(--teal-wash);color:#1d6f4a}
+  .clientcard .openhint{font-size:11px;color:var(--flamingo);margin-top:10px;font-weight:500;opacity:0;transition:.15s}
+  .clientcard:hover .openhint{opacity:1}
+
+  /* ---------- DRAWER (in-place, never navigates away) ---------- */
+  .drawer-scrim{position:fixed;inset:0;background:rgba(33,46,71,.4);z-index:1090;display:none}
+  .drawer-scrim.on{display:block}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:min(720px,96vw);background:var(--cream);z-index:1095;box-shadow:-12px 0 40px rgba(33,46,71,.22);transform:translateX(100%);transition:transform .26s cubic-bezier(.3,.7,.3,1);display:flex;flex-direction:column}
+  .drawer.on{transform:translateX(0)}
+  .drawer .dhead{padding:18px 22px 0;background:var(--white);border-bottom:1px solid var(--line)}
+  .drawer .dhead .drow1{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .drawer .dhead h3{font-family:var(--serif);font-weight:400;font-size:21px;letter-spacing:-.3px}
+  .drawer .dhead .who{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+  .drawer .dhead .x{cursor:pointer;font-size:26px;color:var(--ink-soft);line-height:1;flex:0 0 auto}
+  .drawer .dhead .quick{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .drawer .dtabs{display:flex;gap:3px;flex-wrap:wrap;margin-top:8px}
+  .drawer .dtab{appearance:none;border:0;background:transparent;font-family:var(--sans);font-weight:500;font-size:12.5px;color:var(--ink-soft);padding:8px 12px;border-radius:9px 9px 0 0;cursor:pointer;border:1px solid transparent;border-bottom:none;position:relative;top:1px}
+  .drawer .dtab[aria-selected="true"]{color:var(--flamingo);background:var(--cream);border-color:var(--line);box-shadow:0 -2px 0 var(--flamingo) inset}
+  .drawer .dtab .badge{display:inline-block;min-width:16px;padding:0 5px;margin-left:4px;border-radius:999px;font-size:10px;background:var(--chip);color:var(--ink-soft)}
+  .drawer .dbody{flex:1;overflow-y:auto;padding:16px 22px 40px}
+  .dpanel{display:none}.dpanel.active{display:block}
+  .dminigrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px;margin-bottom:14px}
+  .dmini{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:11px 12px;position:relative;overflow:hidden}
+  .dmini::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--g,var(--flamingo))}
+  .dmini .v{font-family:var(--serif);font-size:21px;line-height:1}.dmini .k{font-size:10px;color:var(--ink-soft);margin-top:4px}
+  .dmini.red::before{background:var(--red)}.dmini.red .v{color:var(--red)}
+  .dmini.amber::before{background:var(--amber)}.dmini.amber .v{color:var(--amber)}
+  .dmini.green::before{background:var(--teal)}.dmini.green .v{color:var(--teal)}
+  .dsec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 8px}
+  .dsec-h .t{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+  .msgthread{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+  .msg{max-width:82%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.45}
+  .msg .by{font-size:10px;text-transform:uppercase;letter-spacing:.4px;opacity:.6;margin-bottom:3px}
+  .msg.yong{align-self:flex-end;background:var(--flamingo);color:#fff;border-bottom-right-radius:4px}
+  .msg.client{align-self:flex-start;background:var(--white);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .msgbox{display:flex;gap:8px;align-items:flex-end;border-top:1px solid var(--line);padding-top:12px;position:sticky;bottom:0;background:var(--cream)}
+  .msgbox textarea{flex:1;min-height:42px;max-height:140px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;font-family:var(--sans);font-size:13.5px;resize:vertical;background:#fff}
+  .msgbox textarea:focus{outline:none;border-color:var(--flamingo)}
+
+  @media(max-width:680px){
+    .clients{grid-template-columns:1fr}
+    .drawer{width:100vw}
+  }
+  @media(max-width:680px){
+    #app{padding:14px 13px 50px}
+    .tabs{overflow-x:auto;flex-wrap:nowrap}.tab{flex:0 0 auto}
+    .frow{grid-template-columns:1fr}
+    .row{flex-wrap:wrap}
+    h1.title{font-size:22px}
+  }
+
+  @media(max-width:680px){
+    #app{padding:14px 13px 50px}
+    .tabs{overflow-x:auto;flex-wrap:nowrap}.tab{flex:0 0 auto}
+    .frow{grid-template-columns:1fr}
+    .row{flex-wrap:wrap}
+    h1.title{font-size:22px}
+  }
+</style>
+</head>
+<body class="readonly">
+
+<!-- ============ PASSWORD GATE ============ -->
+<div id="gate">
+  <div class="card">
+    <div class="dot"></div>
+    <h1>It's <em>go time.</em></h1>
+    <div class="sub">Flamingo Time · operator console</div>
+    <input id="pw" type="password" placeholder="passphrase" autocomplete="current-password" autofocus>
+    <button id="enter">Enter →</button>
+    <div class="err" id="gerr"></div>
+    <div class="hint">Hint: <b>What would Sue do for me?</b></div>
+    <div class="req"><a href="mailto:yongsnewemail@gmail.com?subject=Access%20code%20request%20%E2%80%94%20operator%20console">Request it →</a></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <header class="top">
+    <div class="brandline">
+      <span class="dot"></span>
+      <div>
+        <h1 class="title">operator <em>console</em></h1>
+        <div class="title-sub">Edit once · everything reads it</div>
+      </div>
+    </div>
+    <div class="topbtns">
+      <a class="tbtn" href="/gotime/">← Cockpit</a>
+      <a class="tbtn" href="https://portal.flamingotimellc.com" target="_blank" rel="noopener">Portals ↗</a>
+      <button class="tbtn" id="lockBtn">Lock</button>
+    </div>
+  </header>
+
+  <div id="freshness" class="freshness" data-state="loading" role="status">
+    <span class="fdot"></span><span class="ftext">Loading…</span>
+    <button class="fbtn" type="button" title="Refresh">↻</button>
+  </div>
+
+  <div class="robar">
+    <span>👁 <b>Read-only</b> — you can browse, but saving needs the portal admin session.
+    <a href="#" id="signinLink">Sign in to admin →</a> (opens the portal admin in a new tab; sign in, then come back and refresh).</span>
+  </div>
+
+  <!-- SCORECARD strip (helm overview, always visible) -->
+  <div class="scorecard" id="scorewrap" style="margin:14px 0 4px">
+    <div class="sc-grid" id="scorecard"></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="helm">⚓ Helm</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="contacts">Contacts <span class="badge" id="b-contacts">·</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="tasks">Tasks <span class="badge" id="b-tasks">·</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="invoices">Invoices <span class="badge" id="b-invoices">·</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="portals">Portals <span class="badge" id="b-portals">·</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="updates">Updates</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="registry">Sites &amp; Access</button>
+  </div>
+
+  <!-- HELM (client grid — the home; click a client to open its drawer in-place) -->
+  <section class="panel active" id="helm">
+    <div class="note">⚓ <b>The bridge.</b> Click any client to open its full workspace right here — tasks, money, messages, files, updates — all editable without leaving this screen.</div>
+    <div class="clients" id="helm-cards"><div class="empty">Loading…</div></div>
+  </section>
+
+  <!-- CONTACTS -->
+  <section class="panel active" id="contacts">
+    <div class="note blue">Writes to <b>crm_contacts</b> (475 rows) — the same table the Directory, portals, and cockpit read. Edit a contact here and every surface shows it on next load.</div>
+    <div class="toolbar writeUI">
+      <div class="grow"><input class="search" id="c-search" placeholder="Search name, email, business…"></div>
+      <select class="filter" id="c-type"><option value="">All types</option></select>
+      <button class="btn" id="c-new">+ New contact</button>
+    </div>
+    <div class="card"><div class="body" id="c-list"><div class="empty">Loading…</div></div></div>
+  </section>
+
+  <!-- TASKS -->
+  <section class="panel" id="tasks">
+    <div class="note blue">Writes to <b>portal_tasks</b>. Create asks/to-dos per client, mark done, edit due dates. Shows in that client's portal immediately.</div>
+    <div class="toolbar writeUI">
+      <div class="grow"><input class="search" id="t-search" placeholder="Search task title…"></div>
+      <select class="filter" id="t-portal"><option value="">All portals</option></select>
+      <select class="filter" id="t-owner"><option value="">Anyone</option><option value="yong">You</option><option value="client">Client</option></select>
+      <button class="btn" id="t-new">+ New task</button>
+    </div>
+    <div class="card"><div class="body" id="t-list"><div class="empty">Loading…</div></div></div>
+  </section>
+
+  <!-- INVOICES -->
+  <section class="panel" id="invoices">
+    <div class="note blue">Writes to <b>portal_invoices</b>. Create invoices, change status (draft → sent → paid), record payments. Stripe pay-in-place already wired on the client side.</div>
+    <div class="toolbar writeUI">
+      <select class="filter" id="i-portal"><option value="">All portals</option></select>
+      <select class="filter" id="i-status"><option value="">All statuses</option><option>draft</option><option>sent</option><option>paid</option><option>void</option></select>
+      <button class="btn" id="i-new">+ New invoice</button>
+    </div>
+    <div class="card"><div class="body" id="i-list"><div class="empty">Loading…</div></div></div>
+  </section>
+
+  <!-- PORTALS -->
+  <section class="panel" id="portals">
+    <div class="note blue">Edits the <b>portals</b> table — client name, email, status, fees, live URL, notes. These are the per-client containers everything else hangs off.</div>
+    <div class="card"><div class="body" id="p-list"><div class="empty">Loading…</div></div></div>
+  </section>
+
+  <!-- UPDATES -->
+  <section class="panel" id="updates">
+    <div class="note blue">Posts to <b>portal_updates</b> — the "what's new" the client sees on their portal home. Pick a client, write a short update, it appears on their portal.</div>
+    <div class="toolbar writeUI">
+      <select class="filter" id="u-portal"><option value="">Pick a portal…</option></select>
+      <button class="btn" id="u-new">+ Post update</button>
+    </div>
+    <div class="card"><div class="body" id="u-list"><div class="empty">Pick a portal to see its updates.</div></div></div>
+  </section>
+
+  <!-- REGISTRY (sites + access) -->
+  <section class="panel" id="registry">
+    <div class="note">Edits the <b>shared site &amp; access registry</b> (one Supabase row). Every command-center artifact reads this — change a link or password here and all the artifacts reflect it. <span class="warn" style="display:inline-block;margin:6px 0 0;padding:4px 10px">⚠ Contains real passwords. Private to this machine.</span></div>
+    <div class="card" style="margin-bottom:14px"><h2>Shared access</h2><div class="body" style="padding:14px 16px" id="reg-shared"><div class="empty">Loading…</div></div></div>
+    <div class="toolbar writeUI"><div class="grow"></div><button class="btn" id="reg-new">+ Add site</button></div>
+    <div class="card"><h2>Sites <span class="count" id="reg-count">—</span></h2><div class="body" id="reg-list"><div class="empty">Loading…</div></div></div>
+  </section>
+</div>
+
+<!-- CLIENT DRAWER (in-place workspace) -->
+<div class="drawer-scrim" id="drawerScrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dhead">
+    <div class="drow1">
+      <div><h3 id="dr-name">—</h3><div class="who" id="dr-who"></div></div>
+      <span class="x" id="dr-close" title="Close (Esc)">×</span>
+    </div>
+    <div class="quick" id="dr-quick"></div>
+    <div class="dtabs" role="tablist">
+      <button class="dtab" role="tab" aria-selected="true" data-dtab="ov">Overview</button>
+      <button class="dtab" role="tab" aria-selected="false" data-dtab="tasks">Tasks <span class="badge" id="dr-b-tasks">·</span></button>
+      <button class="dtab" role="tab" aria-selected="false" data-dtab="money">Money <span class="badge" id="dr-b-money">·</span></button>
+      <button class="dtab" role="tab" aria-selected="false" data-dtab="msgs">Messages <span class="badge" id="dr-b-msgs">·</span></button>
+      <button class="dtab" role="tab" aria-selected="false" data-dtab="files">Files <span class="badge" id="dr-b-files">·</span></button>
+      <button class="dtab" role="tab" aria-selected="false" data-dtab="updates">Updates</button>
+    </div>
+  </div>
+  <div class="dbody">
+    <div class="dpanel active" id="dp-ov"></div>
+    <div class="dpanel" id="dp-tasks"></div>
+    <div class="dpanel" id="dp-money"></div>
+    <div class="dpanel" id="dp-msgs"></div>
+    <div class="dpanel" id="dp-files"></div>
+    <div class="dpanel" id="dp-updates"></div>
+  </div>
+</aside>
+
+<!-- modal mount -->
+<div class="scrim" id="scrim"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== GATE ===================== */
+const PW_HASH = "04c656a456c92c75d48098ba0cc7d6d6842f147026f2549ebb58e1d17752adac";
+const GATE_KEY = "ft_gotime_ok";
+async function sha256(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
+async function tryEnter(){
+  const v=document.getElementById("pw").value;
+  if(await sha256(v)===PW_HASH){ sessionStorage.setItem(GATE_KEY,"1"); openApp(); }
+  else { document.getElementById("gerr").textContent="Not quite. Think: what would Sue do?"; }
+}
+function openApp(){ document.getElementById("gate").style.display="none"; document.getElementById("app").style.display="block"; boot(); }
+document.getElementById("enter").onclick=tryEnter;
+document.getElementById("pw").addEventListener("keydown",e=>{if(e.key==="Enter")tryEnter();});
+document.getElementById("lockBtn").onclick=()=>{sessionStorage.removeItem(GATE_KEY);location.reload();};
+if(sessionStorage.getItem(GATE_KEY)==="1"){ window.addEventListener("DOMContentLoaded",openApp); }
+
+/* ===================== API ===================== */
+const API="https://yongtaing.com";
+const OPT={credentials:"include",cache:"no-store"};
+function jpost(path,body){return fetch(API+path,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});}
+function jpatch(path,body){return fetch(API+path,{method:"PATCH",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});}
+
+/* in-memory state */
+let ST={contacts:[],tasks:[],invoices:[],portals:[],registry:null,canWrite:false};
+
+/* ===================== helpers ===================== */
+const TODAY=new Date();
+function daysFrom(d){if(!d)return null;return Math.round((new Date(d+"T12:00:00")-TODAY)/86400000);}
+function money(n){return "$"+(Number(n)||0).toLocaleString(undefined,{maximumFractionDigits:0});}
+function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function attr(s){return esc(s).replace(/'/g,"&#39;");}
+function toast(msg,err){const t=document.getElementById("toast");t.textContent=msg;t.className="toast on"+(err?" err":"");setTimeout(()=>t.className="toast",err?2600:1800);}
+function adminUrl(slug){return API+"/projects/"+slug+"/";}
+
+/* ===================== DATA PULL ===================== */
+async function pull(){
+  let canWrite=false;
+  try{
+    const [p,t,i]=await Promise.all([
+      fetch(API+"/api/portals",OPT),
+      fetch(API+"/api/portal-tasks?upcoming=1&limit=200",OPT),
+      fetch(API+"/api/portal-invoices?all=1",OPT),
+    ]);
+    if(p.ok){ST.portals=(await p.json()).portals||[];canWrite=true;}
+    if(t.ok)ST.tasks=(await t.json()).tasks||[];
+    if(i.ok)ST.invoices=(await i.json()).invoices||[];
+    // contacts via /api/crm
+    const c=await fetch(API+"/api/crm",OPT);
+    if(c.ok){ST.contacts=(await c.json()).contacts||[];canWrite=true;}
+    // registry via /api/registry
+    const r=await fetch(API+"/api/registry",OPT);
+    if(r.ok)ST.registry=(await r.json()).registry||null;
+  }catch(e){canWrite=false;}
+  ST.canWrite=canWrite;
+  document.body.classList.toggle("readonly",!canWrite);
+  return canWrite;
+}
+
+/* ===================== RENDER: badges + selects ===================== */
+function refreshSelects(){
+  const portalOpts='<option value="">All portals</option>'+ST.portals.map(p=>`<option value="${attr(p.slug)}">${esc(p.display_name||p.slug)}</option>`).join("");
+  ["t-portal","i-portal"].forEach(id=>{const el=document.getElementById(id);const v=el.value;el.innerHTML=portalOpts;el.value=v;});
+  const upOpts='<option value="">Pick a portal…</option>'+ST.portals.map(p=>`<option value="${attr(p.slug)}">${esc(p.display_name||p.slug)}</option>`).join("");
+  const ue=document.getElementById("u-portal");const uv=ue.value;ue.innerHTML=upOpts;ue.value=uv;
+  const types=[...new Set(ST.contacts.map(c=>c.type).filter(Boolean))].sort();
+  const ce=document.getElementById("c-type");const cv=ce.value;ce.innerHTML='<option value="">All types</option>'+types.map(t=>`<option>${esc(t)}</option>`).join("");ce.value=cv;
+  document.getElementById("b-contacts").textContent=ST.contacts.length;
+  document.getElementById("b-tasks").textContent=ST.tasks.length;
+  document.getElementById("b-invoices").textContent=ST.invoices.length;
+  document.getElementById("b-portals").textContent=ST.portals.length;
+}
+
+/* ===================== SCORECARD + HELM grid ===================== */
+function scCard(v,k,cls){return `<div class="sc ${cls||''}"><div class="v">${v}</div><div class="k">${k}</div></div>`;}
+function renderScorecard(){
+  const tasks=ST.tasks;
+  const overdue=tasks.filter(t=>{const d=daysFrom(t.due_date);return d!==null&&d<0&&!t.done;});
+  const mine=tasks.filter(t=>t.owner==="yong"&&!t.done);
+  const asks=tasks.filter(t=>t.owner!=="yong"&&!t.response_text&&!t.done);
+  const inv=ST.invoices;
+  const collected=inv.reduce((s,v)=>s+(v.paid_amount||0),0);
+  const outstanding=inv.filter(v=>v.status!=="void"&&v.status!=="draft").reduce((s,v)=>s+Math.max(0,(v.total||0)-(v.paid_amount||0)),0);
+  const drafted=inv.filter(v=>v.status==="draft").reduce((s,v)=>s+(v.total||0),0);
+  document.getElementById("scorecard").innerHTML=[
+    scCard(ST.portals.length,"Active clients","green"),
+    scCard(overdue.length,"Overdue",overdue.length?"red":"green"),
+    scCard(mine.length,"On your plate",mine.length>3?"amber":"green"),
+    scCard(asks.length,"Client asks",asks.length?"amber":"green"),
+    scCard(money(drafted),"Drafted unsent",drafted?"amber":"green"),
+    scCard(money(outstanding),"Outstanding",outstanding?"amber":"green"),
+    scCard(money(collected),"Collected","green"),
+    scCard(ST.contacts.length,"Contacts","green"),
+  ].join("");
+}
+function clientStats(slug){
+  const t=ST.tasks.filter(x=>x.slug===slug);
+  const yourTasks=t.filter(x=>x.owner==="yong"&&!x.done).length;
+  const asks=t.filter(x=>x.owner!=="yong"&&!x.response_text&&!x.done).length;
+  const overdue=t.filter(x=>{const d=daysFrom(x.due_date);return d!==null&&d<0&&!x.done;}).length;
+  const inv=ST.invoices.filter(x=>x.slug===slug);
+  const outstanding=inv.filter(v=>v.status!=="void"&&v.status!=="draft").reduce((s,v)=>s+Math.max(0,(v.total||0)-(v.paid_amount||0)),0);
+  return {yourTasks,asks,overdue,outstanding};
+}
+function renderHelm(){
+  const el=document.getElementById("helm-cards");
+  if(!ST.portals.length){el.innerHTML='<div class="empty">No clients yet. Add one in the Portals tab.</div>';return;}
+  el.innerHTML=ST.portals.map(p=>{
+    const s=clientStats(p.slug);const c=p.counts||{};
+    return `<div class="clientcard" onclick="openDrawer('${attr(p.slug)}')">
+      <span class="statusdot">${esc(p.status||"active")}</span>
+      <h3>${esc(p.display_name||p.slug)}</h3>
+      <div class="who">${esc(p.client_name||"")}</div>
+      <div class="stats">
+        <div class="stat"><div class="n ${s.overdue?'alert':''}">${s.yourTasks}</div><div class="k">your tasks</div></div>
+        <div class="stat"><div class="n ${s.asks?'warn':''}">${s.asks}</div><div class="k">open asks</div></div>
+        <div class="stat"><div class="n">${c.messages||0}</div><div class="k">messages</div></div>
+        <div class="stat"><div class="n ${s.outstanding?'warn':''}">${s.outstanding?money(s.outstanding):'$0'}</div><div class="k">owed</div></div>
+      </div>
+      <div class="openhint">Open workspace →</div>
+    </div>`;
+  }).join("");
+}
+
+/* ===================== CONTACTS ===================== */
+const CONTACT_TYPES=["Client","Prospect","Lead","Collaborator","Colleague","Connection","Personal"];
+function renderContacts(){
+  const q=(document.getElementById("c-search").value||"").toLowerCase();
+  const ty=document.getElementById("c-type").value;
+  let rows=ST.contacts.filter(c=>!c.archived);
+  if(ty)rows=rows.filter(c=>c.type===ty);
+  if(q)rows=rows.filter(c=>[c.name,c.email,c.business,c.phone].some(x=>(x||"").toLowerCase().includes(q)));
+  rows.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  const el=document.getElementById("c-list");
+  if(!rows.length){el.innerHTML='<div class="empty">No contacts match.</div>';return;}
+  el.innerHTML=rows.slice(0,400).map(c=>{
+    const meta=[c.type?`<span class="pill type">${esc(c.type)}</span>`:"",c.business?esc(c.business):"",c.email?esc(c.email):"",c.phone?esc(c.phone):""].filter(Boolean).join(" · ");
+    return `<div class="row"><div class="main"><div class="ttl">${esc(c.name||"(no name)")}</div><div class="meta">${meta}</div></div><div class="rowact"><button class="iconbtn" title="Edit" onclick="editContact('${attr(c.id)}')">✎</button></div></div>`;
+  }).join("")+(rows.length>400?`<div class="empty">Showing first 400 of ${rows.length}. Search to narrow.</div>`:"");
+}
+function contactForm(c){
+  c=c||{};
+  const tags=(c.tags||[]).join(", ");
+  return `
+   <div class="field"><label>Name *</label><input id="f-name" value="${attr(c.name||"")}"></div>
+   <div class="frow">
+     <div class="field"><label>Type</label><select id="f-type">${CONTACT_TYPES.map(t=>`<option ${c.type===t?"selected":""}>${t}</option>`).join("")}</select></div>
+     <div class="field"><label>Lead score (0–100)</label><input id="f-lead" type="number" min="0" max="100" value="${attr(c.lead_score??"")}"></div>
+   </div>
+   <div class="frow">
+     <div class="field"><label>Email</label><input id="f-email" value="${attr(c.email||"")}"></div>
+     <div class="field"><label>Phone</label><input id="f-phone" value="${attr(c.phone||"")}"></div>
+   </div>
+   <div class="frow">
+     <div class="field"><label>Business</label><input id="f-biz" value="${attr(c.business||"")}"></div>
+     <div class="field"><label>Website</label><input id="f-web" value="${attr(c.website||"")}"></div>
+   </div>
+   <div class="field"><label>Tags (comma-separated)</label><input id="f-tags" value="${attr(tags)}"></div>
+   <div class="field"><label>Context / notes</label><textarea id="f-ctx">${esc(c.context||"")}</textarea></div>`;
+}
+function newContact(){ if(!guardWrite())return; openModal("New contact",contactForm({}),()=>saveContact(null)); }
+function editContact(id){ const c=ST.contacts.find(x=>x.id===id); if(!c)return; openModal("Edit contact",contactForm(c),()=>saveContact(id),extraContactFoot(c)); }
+function extraContactFoot(c){ return `<button class="btn neutral" onclick="archiveContact('${attr(c.id)}')">Archive</button>`; }
+async function saveContact(id){
+  const fields={
+    name:val("f-name"),type:val("f-type"),email:val("f-email"),phone:val("f-phone"),
+    business:val("f-biz"),website:val("f-web"),context:val("f-ctx"),
+    lead_score:val("f-lead")||null,
+    tags:val("f-tags").split(",").map(s=>s.trim()).filter(Boolean),
+  };
+  if(!fields.name){merr("Name is required");return;}
+  await doSave(jpost("/api/crm",{action:"upsert",id:id||undefined,fields}),"Contact saved");
+}
+async function archiveContact(id){
+  if(!confirm("Archive this contact? It hides from lists but isn't deleted."))return;
+  await doSave(jpost("/api/crm",{action:"setArchived",ids:[id],archived:true}),"Archived");
+}
+
+/* ===================== TASKS ===================== */
+function urg(t){const d=daysFrom(t.due_date);if(d===null)return t.response_text?'<span class="pill resp">answered</span>':'<span class="pill slug">no date</span>';if(t.done)return '<span class="pill ok">done</span>';if(d<0)return`<span class="pill over">${Math.abs(d)}d overdue</span>`;if(d<=5)return`<span class="pill soon">due ${d}d</span>`;return`<span class="pill ok">due ${d}d</span>`;}
+function renderTasks(){
+  const q=(document.getElementById("t-search").value||"").toLowerCase();
+  const fp=document.getElementById("t-portal").value, fo=document.getElementById("t-owner").value;
+  let rows=ST.tasks.slice();
+  if(fp)rows=rows.filter(t=>t.slug===fp);
+  if(fo)rows=rows.filter(t=>(t.owner||"client")===fo);
+  if(q)rows=rows.filter(t=>(t.title||"").toLowerCase().includes(q));
+  rows.sort((a,b)=>(a.done?1:0)-(b.done?1:0)||(daysFrom(a.due_date)??999)-(daysFrom(b.due_date)??999));
+  const el=document.getElementById("t-list");
+  if(!rows.length){el.innerHTML='<div class="empty">No tasks match. Use “+ New task” to add one.</div>';return;}
+  el.innerHTML=rows.map(t=>{
+    const owner=(t.owner==="yong")?'<span class="pill yong">YOU</span>':'<span class="pill client">client</span>';
+    const resp=t.response_text?`<div class="resp-txt">↳ ${esc(t.response_text)}</div>`:"";
+    const done=(!t.done&&t.id)?`<button class="iconbtn done" title="Mark done" onclick="taskDone('${attr(t.id)}')">✓</button>`:"";
+    return `<div class="row"><div class="main"><div class="ttl">${esc(t.title)}</div><div class="meta">${owner} ${urg(t)} <a class="pill slug" href="${adminUrl(t.slug)}" target="_blank" rel="noopener">${esc(t.slug)} ↗</a></div>${resp}</div><div class="rowact">${done}<button class="iconbtn" title="Edit" onclick="editTask('${attr(t.id)}')">✎</button></div></div>`;
+  }).join("");
+}
+function taskForm(t){
+  t=t||{};
+  const popts=ST.portals.map(p=>`<option value="${attr(p.slug)}" ${t.slug===p.slug?"selected":""}>${esc(p.display_name||p.slug)}</option>`).join("");
+  return `
+   <div class="frow">
+     <div class="field"><label>Portal *</label><select id="f-slug"><option value="">Pick…</option>${popts}</select></div>
+     <div class="field"><label>Owner</label><select id="f-owner"><option value="client" ${t.owner!=="yong"?"selected":""}>Client (an ask)</option><option value="yong" ${t.owner==="yong"?"selected":""}>You (a to-do)</option></select></div>
+   </div>
+   <div class="field"><label>Title *</label><input id="f-title" value="${attr(t.title||"")}"></div>
+   <div class="field"><label>Description</label><textarea id="f-desc">${esc(t.description||"")}</textarea></div>
+   <div class="frow">
+     <div class="field"><label>Due date</label><input id="f-due" type="date" value="${attr((t.due_date||"").slice(0,10))}"></div>
+     <div class="field"><label>Input type</label><select id="f-input"><option value="none" ${(!t.input_type||t.input_type==="none")?"selected":""}>None (just a checkbox)</option><option value="text" ${t.input_type==="text"?"selected":""}>Text answer</option><option value="choice" ${t.input_type==="choice"?"selected":""}>Choice</option></select></div>
+   </div>`;
+}
+function newTask(){ if(!guardWrite())return; openModal("New task / ask",taskForm({}),()=>saveTask(null)); }
+function editTask(id){ const t=ST.tasks.find(x=>x.id===id); if(!t)return; openModal("Edit task",taskForm(t),()=>saveTask(id)); }
+async function saveTask(id){
+  const slug=val("f-slug"),title=val("f-title");
+  if(!slug){merr("Pick a portal");return;}
+  if(!title){merr("Title is required");return;}
+  const payload={slug,title,description:val("f-desc"),owner:val("f-owner"),due_date:val("f-due")||null,input_type:val("f-input")};
+  if(id) await doSave(jpatch("/api/portal-tasks?id="+encodeURIComponent(id),payload),"Task updated");
+  else   await doSave(jpost("/api/portal-tasks",payload),"Task created");
+}
+async function taskDone(id){
+  await doSave(jpatch("/api/portal-tasks?id="+encodeURIComponent(id),{done:true}),"Marked done",true);
+}
+
+/* ===================== INVOICES ===================== */
+function renderInvoices(){
+  const fp=document.getElementById("i-portal").value, fs=document.getElementById("i-status").value;
+  let rows=ST.invoices.slice();
+  if(fp)rows=rows.filter(v=>v.slug===fp);
+  if(fs)rows=rows.filter(v=>v.status===fs);
+  rows.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  const el=document.getElementById("i-list");
+  if(!rows.length){el.innerHTML='<div class="empty">No invoices match.</div>';return;}
+  el.innerHTML=rows.map(v=>{
+    const bal=Math.max(0,(v.total||0)-(v.paid_amount||0));
+    const st=v.status==="void"?'<span class="pill slug">void</span>':v.status==="draft"?'<span class="pill soon">draft</span>':v.status==="paid"||bal===0?'<span class="pill ok">paid</span>':v.status==="sent"?'<span class="pill over">'+money(bal)+' due</span>':'<span class="pill slug">'+esc(v.status)+'</span>';
+    return `<div class="row"><div class="main"><div class="ttl">${esc(v.invoice_number||"(draft)")} · ${money(v.total)}</div><div class="meta"><a class="pill slug" href="${adminUrl(v.slug)}" target="_blank" rel="noopener">${esc(v.slug)} ↗</a> ${st}</div></div><div class="rowact"><button class="iconbtn" title="Edit / status" onclick="editInvoice('${attr(v.id)}')">✎</button></div></div>`;
+  }).join("");
+}
+function invoiceForm(v,creating){
+  v=v||{};
+  const popts=ST.portals.map(p=>`<option value="${attr(p.slug)}" ${v.slug===p.slug?"selected":""}>${esc(p.display_name||p.slug)}</option>`).join("");
+  const statuses=["draft","sent","paid","void"];
+  return `
+   ${creating?`<div class="field"><label>Portal *</label><select id="f-slug"><option value="">Pick…</option>${popts}</select></div>`:`<div class="field"><label>Portal</label><input value="${attr(v.slug)}" disabled></div>`}
+   <div class="field"><label>Title</label><input id="f-title" value="${attr(v.title||"")}" placeholder="e.g. Website build — milestone 1"></div>
+   <div class="frow">
+     <div class="field"><label>Amount (total $)</label><input id="f-total" type="number" min="0" step="0.01" value="${attr(v.total??"")}"></div>
+     <div class="field"><label>Status</label><select id="f-status">${statuses.map(s=>`<option ${v.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
+   </div>
+   ${creating?"":`<div class="field"><label>Paid amount ($)</label><input id="f-paid" type="number" min="0" step="0.01" value="${attr(v.paid_amount??0)}"><div class="hintline">Set status to “paid” to auto-stamp full payment.</div></div>`}
+   <div class="field"><label>Description</label><textarea id="f-desc">${esc(v.description||"")}</textarea></div>`;
+}
+function newInvoice(){ if(!guardWrite())return; openModal("New invoice",invoiceForm({},true),()=>saveInvoice(null)); }
+function editInvoice(id){ const v=ST.invoices.find(x=>x.id===id); if(!v)return; openModal("Edit invoice",invoiceForm(v,false),()=>saveInvoice(id)); }
+async function saveInvoice(id){
+  if(id){
+    const payload={title:val("f-title"),description:val("f-desc"),status:val("f-status"),total:Number(val("f-total")||0)};
+    const paid=val("f-paid"); if(paid!=="")payload.paid_amount=Number(paid);
+    await doSave(jpatch("/api/portal-invoices?id="+encodeURIComponent(id),payload),"Invoice updated");
+  }else{
+    const slug=val("f-slug"); if(!slug){merr("Pick a portal");return;}
+    const total=Number(val("f-total")||0);
+    const payload={slug,title:val("f-title"),description:val("f-desc"),status:val("f-status"),total,subtotal:total,
+      line_items:[{description:val("f-title")||"Services",amount:total}]};
+    await doSave(jpost("/api/portal-invoices",payload),"Invoice created");
+  }
+}
+
+/* ===================== PORTALS ===================== */
+function renderPortals(){
+  const el=document.getElementById("p-list");
+  if(!ST.portals.length){el.innerHTML='<div class="empty">No portals yet.</div>';return;}
+  el.innerHTML=ST.portals.map(p=>{
+    const c=p.counts||{};
+    const meta=[`<span class="pill slug">${esc(p.slug)}</span>`,p.status?`<span class="pill ok">${esc(p.status)}</span>`:"",p.client_email?esc(p.client_email):"",`${c.pending_asks||0} open asks`].filter(Boolean).join(" · ");
+    return `<div class="row"><div class="main"><div class="ttl">${esc(p.display_name||p.slug)} <span style="color:var(--ink-soft);font-weight:300">· ${esc(p.client_name||"")}</span></div><div class="meta">${meta}</div></div><div class="rowact"><button class="iconbtn" title="Edit" onclick="editPortal('${attr(p.slug)}')">✎</button></div></div>`;
+  }).join("");
+}
+function portalForm(p){
+  return `
+   <div class="frow">
+     <div class="field"><label>Display name</label><input id="f-disp" value="${attr(p.display_name||"")}"></div>
+     <div class="field"><label>Status</label><select id="f-status">${["active","paused","complete","archived"].map(s=>`<option ${p.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
+   </div>
+   <div class="field"><label>Client name</label><input id="f-cname" value="${attr(p.client_name||"")}"></div>
+   <div class="frow">
+     <div class="field"><label>Client email</label><input id="f-cemail" value="${attr(p.client_email||"")}"></div>
+     <div class="field"><label>Client phone</label><input id="f-cphone" value="${attr(p.client_phone||"")}"></div>
+   </div>
+   <div class="frow">
+     <div class="field"><label>Project fee ($)</label><input id="f-fee" type="number" min="0" step="0.01" value="${attr(p.project_fee??"")}"></div>
+     <div class="field"><label>Retainer ($)</label><input id="f-ret" type="number" min="0" step="0.01" value="${attr(p.retainer_amount??"")}"></div>
+   </div>
+   <div class="field"><label>Live URL</label><input id="f-url" value="${attr(p.live_url||"")}"></div>
+   <div class="field"><label>Notes</label><textarea id="f-notes">${esc(p.notes||"")}</textarea></div>`;
+}
+function editPortal(slug){ const p=ST.portals.find(x=>x.slug===slug); if(!p)return; openModal("Edit "+(p.display_name||slug),portalForm(p),()=>savePortal(slug)); }
+async function savePortal(slug){
+  const payload={display_name:val("f-disp"),client_name:val("f-cname"),client_email:val("f-cemail"),client_phone:val("f-cphone"),
+    status:val("f-status"),project_fee:val("f-fee")||null,retainer_amount:val("f-ret")||null,live_url:val("f-url")||null,notes:val("f-notes")};
+  await doSave(jpatch("/api/portals?slug="+encodeURIComponent(slug),payload),"Portal updated");
+}
+
+/* ===================== UPDATES ===================== */
+async function loadUpdates(){
+  const slug=document.getElementById("u-portal").value;
+  const el=document.getElementById("u-list");
+  if(!slug){el.innerHTML='<div class="empty">Pick a portal to see its updates.</div>';return;}
+  el.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const r=await fetch(API+"/api/portal-updates?slug="+encodeURIComponent(slug),OPT);
+    const j=r.ok?await r.json():{updates:[]};
+    const ups=j.updates||[];
+    el.innerHTML=ups.length?ups.map(u=>`<div class="row"><div class="main"><div class="ttl">${esc(u.title)}</div><div class="meta">${esc((u.body_md||"").slice(0,120))}${(u.body_md||"").length>120?"…":""}</div><div class="meta" style="opacity:.7">${esc((u.posted_at||"").slice(0,10))}</div></div></div>`).join(""):'<div class="empty">No updates yet for this portal.</div>';
+  }catch(e){el.innerHTML='<div class="empty">Could not load updates.</div>';}
+}
+function newUpdate(){
+  if(!guardWrite())return;
+  const slug=document.getElementById("u-portal").value;
+  if(!slug){toast("Pick a portal first",true);return;}
+  const p=ST.portals.find(x=>x.slug===slug);
+  openModal("Post update → "+(p?p.display_name:slug),
+    `<div class="field"><label>Title *</label><input id="f-title" placeholder="e.g. Homepage draft is ready for review"></div>
+     <div class="field"><label>Update (markdown ok) *</label><textarea id="f-body" style="min-height:120px"></textarea></div>`,
+    ()=>saveUpdate(slug));
+}
+async function saveUpdate(slug){
+  const title=val("f-title"),body_md=val("f-body");
+  if(!title){merr("Title required");return;}
+  if(!body_md){merr("Body required");return;}
+  await doSave(jpost("/api/portal-updates",{slug,title,body_md}),"Update posted",false,loadUpdates);
+}
+
+/* ===================== REGISTRY (sites + access) ===================== */
+function renderRegistry(){
+  const r=ST.registry;
+  const sh=document.getElementById("reg-shared");
+  if(!r){sh.innerHTML='<div class="empty">No registry loaded.</div>';document.getElementById("reg-list").innerHTML='<div class="empty">—</div>';return;}
+  const s=r.shared||{};
+  sh.innerHTML=`<div class="row" style="padding:6px 4px"><div class="main"><div class="meta">Shared password</div><div class="ttl"><code onclick="copyTxt('${attr(s.password||"")}')">${esc(s.password||"(none)")}</code> &nbsp; <span style="color:var(--ink-soft);font-size:12px">hint: “${esc(s.hint||"")}”</span></div><div class="meta">retrieve: ${esc(s.retrieve_email||"")}</div></div><div class="rowact"><button class="iconbtn" title="Edit shared access" onclick="editShared()">✎</button></div></div>`;
+  const sites=r.sites||[];
+  document.getElementById("reg-count").textContent=sites.length;
+  const el=document.getElementById("reg-list");
+  el.innerHTML=sites.length?sites.map(st=>{
+    const meta=[st.url?esc(st.url):"",st.links!=null?`${st.links} links`:"",st.roles!=null?`${st.roles} roles`:"",st.artifact?`artifact: ${esc(st.artifact)}`:""].filter(Boolean).join(" · ");
+    return `<div class="row"><div class="main"><div class="ttl">${esc(st.emoji||"")} ${esc(st.name)}</div><div class="meta">${meta}</div></div><div class="rowact"><button class="iconbtn" title="Edit" onclick="editSite('${attr(st.key)}')">✎</button><button class="iconbtn" title="Remove" onclick="removeSite('${attr(st.key)}')">🗑</button></div></div>`;
+  }).join(""):'<div class="empty">No sites yet.</div>';
+}
+function editShared(){
+  if(!guardWrite())return;
+  const s=(ST.registry&&ST.registry.shared)||{};
+  openModal("Shared access",
+    `<div class="field"><label>Shared password</label><input id="f-pw" value="${attr(s.password||"")}"></div>
+     <div class="field"><label>Hint</label><input id="f-hint" value="${attr(s.hint||"")}"></div>
+     <div class="field"><label>Retrieve email</label><input id="f-email" value="${attr(s.retrieve_email||"")}"></div>
+     <div class="hintline" style="color:#8a2a2a">⚠ Changing the password here updates what the artifacts display — it does NOT re-hash the actual site gates. Rotate those separately.</div>`,
+    ()=>saveShared());
+}
+async function saveShared(){
+  await doSave(jpost("/api/registry",{action:"setShared",shared:{password:val("f-pw"),hint:val("f-hint"),retrieve_email:val("f-email")}}),"Shared access saved",false,null,true);
+}
+function siteForm(st){
+  st=st||{};
+  return `
+   <div class="frow">
+     <div class="field"><label>Key * (slug, lowercase)</label><input id="f-key" value="${attr(st.key||"")}" ${st.key?"readonly":""}></div>
+     <div class="field"><label>Emoji</label><input id="f-emoji" value="${attr(st.emoji||"")}"></div>
+   </div>
+   <div class="field"><label>Name *</label><input id="f-name" value="${attr(st.name||"")}"></div>
+   <div class="field"><label>URL</label><input id="f-url" value="${attr(st.url||"")}"></div>
+   <div class="frow">
+     <div class="field"><label>Link count</label><input id="f-links" type="number" min="0" value="${attr(st.links??"")}"></div>
+     <div class="field"><label>Role count</label><input id="f-roles" type="number" min="0" value="${attr(st.roles??"")}"></div>
+   </div>
+   <div class="field"><label>Artifact id</label><input id="f-artifact" value="${attr(st.artifact||"")}"></div>
+   <div class="field"><label>Blurb</label><textarea id="f-blurb">${esc(st.blurb||"")}</textarea></div>`;
+}
+function newSite(){ if(!guardWrite())return; openModal("Add site",siteForm({}),()=>saveSite()); }
+function editSite(key){ const st=(ST.registry.sites||[]).find(x=>x.key===key); if(!st)return; openModal("Edit "+st.name,siteForm(st),()=>saveSite()); }
+async function saveSite(){
+  const site={key:val("f-key"),emoji:val("f-emoji"),name:val("f-name"),url:val("f-url"),links:val("f-links")||null,roles:val("f-roles")||null,artifact:val("f-artifact"),blurb:val("f-blurb")};
+  if(!site.key||!site.name){merr("Key and name required");return;}
+  await doSave(jpost("/api/registry",{action:"upsertSite",site}),"Site saved",false,null,true);
+}
+async function removeSite(key){
+  if(!confirm("Remove this site from the registry? (Doesn't touch the actual site, just the registry/artifacts.)"))return;
+  const r=await jpost("/api/registry",{action:"removeSite",key});
+  if(r.ok){ST.registry=(await r.json()).registry;renderRegistry();toast("Removed");}
+  else toast("Failed",true);
+}
+function copyTxt(t){navigator.clipboard&&navigator.clipboard.writeText(t);toast("Copied: "+t);}
+
+/* ===================== CLIENT DRAWER (the helm workspace) ===================== */
+let DR_SLUG=null, DR_TAB="ov", DR_CACHE={messages:null,files:null,updates:null};
+function curPortal(){return ST.portals.find(p=>p.slug===DR_SLUG)||{};}
+function openDrawer(slug){
+  DR_SLUG=slug; DR_TAB="ov"; DR_CACHE={messages:null,files:null,updates:null};
+  const p=curPortal();
+  document.getElementById("dr-name").textContent=(p.display_name||slug);
+  document.getElementById("dr-who").textContent=[p.client_name,p.client_email,p.client_phone].filter(Boolean).join("  ·  ");
+  // quick actions row
+  const q=[];
+  if(p.client_email)q.push(`<button class="btn tiny" onclick="emailClient('${attr(p.client_email)}','${attr(p.display_name||slug)}','${attr(slug)}')">✉ Email client</button>`);
+  q.push(`<button class="btn tiny ghost" onclick="editPortal('${attr(slug)}')">✎ Edit client</button>`);
+  if(p.live_url)q.push(`<a class="btn tiny neutral" href="${attr(p.live_url)}" target="_blank" rel="noopener">Live site ↗</a>`);
+  document.getElementById("dr-quick").innerHTML=q.join("");
+  // reset subtabs
+  document.querySelectorAll(".dtab").forEach(t=>t.setAttribute("aria-selected",t.dataset.dtab==="ov"?"true":"false"));
+  document.querySelectorAll(".dpanel").forEach(pl=>pl.classList.remove("active"));
+  document.getElementById("dp-ov").classList.add("active");
+  renderDrawerBadges(); drawTab("ov");
+  document.getElementById("drawer").classList.add("on");
+  document.getElementById("drawer").setAttribute("aria-hidden","false");
+  document.getElementById("drawerScrim").classList.add("on");
+}
+function closeDrawer(){
+  document.getElementById("drawer").classList.remove("on");
+  document.getElementById("drawer").setAttribute("aria-hidden","true");
+  document.getElementById("drawerScrim").classList.remove("on");
+  DR_SLUG=null;
+}
+document.getElementById("dr-close").onclick=closeDrawer;
+document.getElementById("drawerScrim").onclick=closeDrawer;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(document.getElementById("scrim").classList.contains("on"))return;closeDrawer();}});
+document.querySelectorAll(".dtab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll(".dtab").forEach(x=>x.setAttribute("aria-selected","false"));
+  t.setAttribute("aria-selected","true");
+  document.querySelectorAll(".dpanel").forEach(pl=>pl.classList.remove("active"));
+  DR_TAB=t.dataset.dtab;
+  document.getElementById("dp-"+DR_TAB).classList.add("active");
+  drawTab(DR_TAB);
+}));
+function drTasks(){return ST.tasks.filter(t=>t.slug===DR_SLUG);}
+function drInvoices(){return ST.invoices.filter(v=>v.slug===DR_SLUG);}
+function renderDrawerBadges(){
+  document.getElementById("dr-b-tasks").textContent=drTasks().filter(t=>!t.done).length;
+  document.getElementById("dr-b-money").textContent=drInvoices().length;
+  const p=curPortal();document.getElementById("dr-b-msgs").textContent=(p.counts&&p.counts.messages)||0;
+  document.getElementById("dr-b-files").textContent=DR_CACHE.files?DR_CACHE.files.length:"·";
+}
+function drawTab(tab){
+  if(tab==="ov")return drawOverview();
+  if(tab==="tasks")return drawDrTasks();
+  if(tab==="money")return drawDrMoney();
+  if(tab==="msgs")return drawDrMsgs();
+  if(tab==="files")return drawDrFiles();
+  if(tab==="updates")return drawDrUpdates();
+}
+/* --- overview --- */
+function drawOverview(){
+  const p=curPortal();const s=clientStats(DR_SLUG);
+  const tasks=drTasks();const open=tasks.filter(t=>!t.done);
+  const inv=drInvoices();
+  const collected=inv.reduce((a,v)=>a+(v.paid_amount||0),0);
+  const next=open.slice().sort((a,b)=>(daysFrom(a.due_date)??999)-(daysFrom(b.due_date)??999))[0];
+  document.getElementById("dp-ov").innerHTML=`
+    <div class="dminigrid">
+      ${miniCard(s.yourTasks,"your tasks",s.overdue?'red':'')}
+      ${miniCard(s.asks,"open asks",s.asks?'amber':'')}
+      ${miniCard(s.outstanding?money(s.outstanding):'$0',"outstanding",s.outstanding?'amber':'green')}
+      ${miniCard(money(collected),"collected",'green')}
+    </div>
+    <div class="dsec-h"><span class="t">Status</span><button class="btn tiny ghost" onclick="editPortal('${attr(DR_SLUG)}')">✎ Edit</button></div>
+    <div class="card"><div class="body" style="padding:12px 14px">
+      <div class="meta" style="font-size:13px;color:var(--ink)">${esc(p.client_name||"")} · <span class="pill ok">${esc(p.status||"active")}</span></div>
+      ${p.project_fee?`<div class="meta">Project fee: ${money(p.project_fee)}</div>`:""}
+      ${p.notes?`<div class="meta" style="margin-top:6px">${esc(p.notes)}</div>`:""}
+      ${next?`<div class="meta" style="margin-top:8px">Next up: <b>${esc(next.title)}</b> ${urg(next)}</div>`:'<div class="meta" style="margin-top:8px">Nothing pending. 🦩</div>'}
+    </div></div>
+    <div class="dsec-h"><span class="t">Recent activity</span></div>
+    <div class="card"><div class="body" id="dr-ov-act"><div class="empty">Loading…</div></div></div>`;
+  // pull recent activity for this slug
+  fetch(API+"/api/portal-activity?slug="+encodeURIComponent(DR_SLUG)+"&limit=12",OPT).then(r=>r.ok?r.json():{activity:[]}).then(j=>{
+    const a=j.activity||[];const el=document.getElementById("dr-ov-act");if(!el)return;
+    el.innerHTML=a.length?a.map(x=>`<div class="row"><div class="main"><div class="ttl" style="font-size:12.5px">${esc(x.summary)}</div><div class="meta"><span class="pill slug">${esc((x.kind||"").replace(/[._]/g," "))}</span><span>· ${esc((x.created_at||"").slice(0,10))}</span></div></div></div>`).join(""):'<div class="empty">No activity yet.</div>';
+  }).catch(()=>{});
+}
+function miniCard(v,k,cls){return `<div class="dmini ${cls||''}"><div class="v">${v}</div><div class="k">${k}</div></div>`;}
+/* --- tasks (in drawer, scoped to client) --- */
+function drawDrTasks(){
+  const rows=drTasks().sort((a,b)=>(a.done?1:0)-(b.done?1:0)||(daysFrom(a.due_date)??999)-(daysFrom(b.due_date)??999));
+  document.getElementById("dp-tasks").innerHTML=`
+    <div class="dsec-h"><span class="t">Tasks &amp; asks</span><button class="btn tiny" onclick="newTaskFor('${attr(DR_SLUG)}')">+ New</button></div>
+    <div class="card"><div class="body">${rows.length?rows.map(drTaskRow).join(""):'<div class="empty">No tasks. Add one above.</div>'}</div></div>`;
+}
+function drTaskRow(t){
+  const owner=(t.owner==="yong")?'<span class="pill yong">YOU</span>':'<span class="pill client">client</span>';
+  const resp=t.response_text?`<div class="resp-txt">↳ ${esc(t.response_text)}</div>`:"";
+  const done=(!t.done&&t.id)?`<button class="iconbtn done" title="Mark done" onclick="taskDone('${attr(t.id)}')">✓</button>`:"";
+  return `<div class="row"><div class="main"><div class="ttl">${esc(t.title)}</div><div class="meta">${owner} ${urg(t)}</div>${resp}</div><div class="rowact">${done}<button class="iconbtn" title="Edit" onclick="editTask('${attr(t.id)}')">✎</button></div></div>`;
+}
+function newTaskFor(slug){ if(!guardWrite())return; openModal("New task / ask",taskForm({slug}),()=>saveTask(null)); }
+/* --- money (in drawer) --- */
+function drawDrMoney(){
+  const rows=drInvoices().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  const outstanding=rows.filter(v=>v.status!=="void"&&v.status!=="draft").reduce((s,v)=>s+Math.max(0,(v.total||0)-(v.paid_amount||0)),0);
+  const collected=rows.reduce((s,v)=>s+(v.paid_amount||0),0);
+  document.getElementById("dp-money").innerHTML=`
+    <div class="dminigrid">${miniCard(money(outstanding),"outstanding",outstanding?'amber':'green')}${miniCard(money(collected),"collected",'green')}${miniCard(rows.length,"invoices")}</div>
+    <div class="dsec-h"><span class="t">Invoices</span><button class="btn tiny" onclick="newInvoiceFor('${attr(DR_SLUG)}')">+ New</button></div>
+    <div class="card"><div class="body">${rows.length?rows.map(v=>{const bal=Math.max(0,(v.total||0)-(v.paid_amount||0));const st=v.status==="void"?'<span class="pill slug">void</span>':v.status==="draft"?'<span class="pill soon">draft</span>':v.status==="paid"||bal===0?'<span class="pill ok">paid</span>':'<span class="pill over">'+money(bal)+' due</span>';return `<div class="row"><div class="main"><div class="ttl">${esc(v.invoice_number||"(draft)")} · ${money(v.total)}</div><div class="meta">${st}${v.title?' · '+esc(v.title):''}</div></div><div class="rowact"><button class="iconbtn" title="Edit / status" onclick="editInvoice('${attr(v.id)}')">✎</button></div></div>`;}).join(""):'<div class="empty">No invoices. Create one above.</div>'}</div></div>`;
+}
+function newInvoiceFor(slug){ if(!guardWrite())return; const f=invoiceForm({slug},true); openModal("New invoice",f,()=>saveInvoice(null)); setTimeout(()=>{const s=document.getElementById("f-slug");if(s){s.value=slug;}},0); }
+/* --- messages (two-way, in drawer) --- */
+async function drawDrMsgs(){
+  const el=document.getElementById("dp-msgs");
+  el.innerHTML='<div class="empty">Loading messages…</div>';
+  let msgs=DR_CACHE.messages;
+  if(!msgs){
+    try{const r=await fetch(API+"/api/portal-messages?slug="+encodeURIComponent(DR_SLUG),OPT);msgs=r.ok?((await r.json()).messages||[]):[];DR_CACHE.messages=msgs;}
+    catch(e){el.innerHTML='<div class="empty">Could not load messages.</div>';return;}
+  }
+  const thread=msgs.length?`<div class="msgthread">${msgs.map(m=>{const who=m.author==="yong"?"yong":"client";return `<div class="msg ${who}"><div class="by">${who==='yong'?'You':'Client'} · ${esc((m.created_at||'').slice(0,10))}</div>${m.subject?`<b>${esc(m.subject)}</b><br>`:''}${esc(m.body)}</div>`;}).join("")}</div>`:'<div class="empty">No messages yet. Start the thread below.</div>';
+  el.innerHTML=`<div class="dsec-h"><span class="t">Conversation</span></div>${thread}
+    <div class="msgbox writeUI"><textarea id="dr-msg" placeholder="Reply to ${esc((curPortal().display_name||DR_SLUG))}…"></textarea><button class="btn" onclick="sendDrMsg()">Send</button></div>`;
+  const ta=document.getElementById("dr-msg");if(ta){ta.focus();ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey))sendDrMsg();});}
+}
+async function sendDrMsg(){
+  if(!guardWrite())return;
+  const body=val("dr-msg");if(!body){toast("Write a message first",true);return;}
+  const slug=DR_SLUG;
+  try{
+    const r=await jpost("/api/portal-messages",{slug,body});
+    if(!r.ok){toast("Send failed",true);return;}
+    DR_CACHE.messages=null; // force refresh
+    await drawDrMsgs(); toast("Sent");
+    // bump message count locally
+    const p=curPortal();if(p.counts)p.counts.messages=(p.counts.messages||0)+1;renderDrawerBadges();
+  }catch(e){toast("Network error",true);}
+}
+/* --- files (list + download + delete, in drawer) --- */
+async function drawDrFiles(){
+  const el=document.getElementById("dp-files");
+  el.innerHTML='<div class="empty">Loading files…</div>';
+  let files=DR_CACHE.files;
+  if(!files){
+    try{const r=await fetch(API+"/api/portal-files?slug="+encodeURIComponent(DR_SLUG),OPT);files=r.ok?((await r.json()).files||[]):[];DR_CACHE.files=files;renderDrawerBadges();}
+    catch(e){el.innerHTML='<div class="empty">Could not load files.</div>';return;}
+  }
+  el.innerHTML=`<div class="dsec-h"><span class="t">Shared files</span></div>
+    <div class="card"><div class="body">${files.length?files.map(f=>`<div class="row"><div class="main"><div class="ttl">${esc(f.filename||f.name||"file")}</div><div class="meta">${esc((f.created_at||"").slice(0,10))}${f.size?' · '+Math.round(f.size/1024)+' KB':''}</div></div><div class="rowact"><button class="iconbtn" title="Download" onclick="dlFile('${attr(f.id)}')">⤓</button><button class="iconbtn" title="Delete" onclick="delFile('${attr(f.id)}')">🗑</button></div></div>`).join(""):'<div class="empty">No files shared with this client yet.</div>'}</div></div>
+    <div class="note blue" style="margin-top:12px">Upload happens from the client portal (drag-drop). Here you can review, download, and remove.</div>`;
+}
+async function dlFile(id){
+  try{const r=await fetch(API+"/api/portal-files?id="+encodeURIComponent(id)+"&download=1",OPT);const j=await r.json();if(j.url)window.open(j.url,"_blank");else toast("No link",true);}catch(e){toast("Failed",true);}
+}
+async function delFile(id){
+  if(!guardWrite())return;
+  if(!confirm("Delete this file? This removes it from the client portal too."))return;
+  try{const r=await fetch(API+"/api/portal-files?id="+encodeURIComponent(id),{method:"DELETE",credentials:"include"});if(!r.ok)throw 0;DR_CACHE.files=null;await drawDrFiles();toast("Deleted");}catch(e){toast("Failed",true);}
+}
+/* --- updates (in drawer) --- */
+async function drawDrUpdates(){
+  const el=document.getElementById("dp-updates");
+  el.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const r=await fetch(API+"/api/portal-updates?slug="+encodeURIComponent(DR_SLUG),OPT);
+    const ups=r.ok?((await r.json()).updates||[]):[];
+    el.innerHTML=`<div class="dsec-h"><span class="t">Posted updates</span><button class="btn tiny" onclick="newUpdateFor('${attr(DR_SLUG)}')">+ Post</button></div>
+      <div class="card"><div class="body">${ups.length?ups.map(u=>`<div class="row"><div class="main"><div class="ttl">${esc(u.title)}</div><div class="meta">${esc((u.body_md||"").slice(0,140))}${(u.body_md||"").length>140?"…":""}</div><div class="meta" style="opacity:.7">${esc((u.posted_at||"").slice(0,10))}</div></div></div>`).join(""):'<div class="empty">No updates yet. Post one above — the client sees it on their portal home.</div>'}</div></div>`;
+  }catch(e){el.innerHTML='<div class="empty">Could not load updates.</div>';}
+}
+function newUpdateFor(slug){
+  if(!guardWrite())return;
+  const p=ST.portals.find(x=>x.slug===slug);
+  openModal("Post update → "+(p?p.display_name:slug),
+    `<div class="field"><label>Title *</label><input id="f-title" placeholder="e.g. Homepage draft is ready for review"></div>
+     <div class="field"><label>Update (markdown ok) *</label><textarea id="f-body" style="min-height:120px"></textarea></div>`,
+    ()=>saveUpdateDrawer(slug));
+}
+async function saveUpdateDrawer(slug){
+  const title=val("f-title"),body_md=val("f-body");
+  if(!title){merr("Title required");return;}
+  if(!body_md){merr("Body required");return;}
+  await doSave(jpost("/api/portal-updates",{slug,title,body_md}),"Update posted",false,()=>{if(DR_SLUG===slug&&DR_TAB==="updates")drawDrUpdates();});
+}
+function emailClient(to,name,slug){ emailContact(to,name,slug); }
+
+/* ===================== MODAL plumbing ===================== */
+let MODAL_SAVE=null;
+function openModal(title,inner,onsave,extraFoot){
+  MODAL_SAVE=onsave;
+  document.getElementById("modal").innerHTML=
+    `<h3>${esc(title)}<span class="x" onclick="closeModal()">×</span></h3>
+     <div class="mbody">${inner}</div>
+     <div class="mfoot"><span class="merr" id="merr"></span>${extraFoot||""}<button class="btn neutral" onclick="closeModal()">Cancel</button><button class="btn" id="msave">Save</button></div>`;
+  document.getElementById("msave").onclick=()=>MODAL_SAVE&&MODAL_SAVE();
+  document.getElementById("scrim").classList.add("on");
+}
+function closeModal(){document.getElementById("scrim").classList.remove("on");MODAL_SAVE=null;}
+document.getElementById("scrim").addEventListener("click",e=>{if(e.target.id==="scrim")closeModal();});
+function val(id){const e=document.getElementById(id);return e?e.value.trim():"";}
+function merr(m){const e=document.getElementById("merr");if(e)e.textContent=m;}
+function guardWrite(){ if(!ST.canWrite){toast("Read-only — sign into admin first",true);return false;} return true; }
+
+/* shared save wrapper: runs the fetch, toasts, closes, refreshes data */
+async function doSave(promise,okMsg,quiet,after,registryRefresh){
+  const btn=document.getElementById("msave"); if(btn){btn.disabled=true;btn.textContent="Saving…";}
+  try{
+    const r=await promise;
+    if(!r.ok){const j=await r.json().catch(()=>({}));merr(j.error||("Save failed ("+r.status+")"));if(btn){btn.disabled=false;btn.textContent="Save";}return;}
+    if(registryRefresh){try{const jr=await r.json();if(jr.registry)ST.registry=jr.registry;}catch(e){}}
+    closeModal(); toast(okMsg||"Saved");
+    if(registryRefresh){renderRegistry();}
+    else{ await pull(); refreshSelects(); renderActive(); if(DR_SLUG){renderDrawerBadges();drawTab(DR_TAB);} }
+    if(after)after();
+  }catch(e){merr("Network error");if(btn){btn.disabled=false;btn.textContent="Save";}}
+}
+
+/* email a client/contact — queues a Gmail send via /api/crm-email, falls back to mailto */
+async function emailContact(to,name,slug){
+  if(!to)return;
+  if(ST.canWrite){
+    const subject=prompt("Subject to "+name+":","");if(subject===null)return;
+    const body=prompt("Message:","")||"";
+    try{const r=await jpost("/api/crm-email",{to_email:to,name,slug:slug||null,subject,body_text:body});if(r.ok){toast("Queued — sends from your Gmail within ~5 min");return;}}catch(e){}
+  }
+  window.open("mailto:"+encodeURIComponent(to),"_blank");
+}
+
+/* ===================== tabs + wiring ===================== */
+let ACTIVE="helm";
+function renderActive(){
+  renderScorecard();
+  if(ACTIVE==="helm")renderHelm();
+  else if(ACTIVE==="contacts")renderContacts();
+  else if(ACTIVE==="tasks")renderTasks();
+  else if(ACTIVE==="invoices")renderInvoices();
+  else if(ACTIVE==="portals")renderPortals();
+  else if(ACTIVE==="updates")loadUpdates();
+  else if(ACTIVE==="registry")renderRegistry();
+}
+document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected","false"));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  tab.setAttribute("aria-selected","true");
+  ACTIVE=tab.dataset.tab;
+  document.getElementById(ACTIVE).classList.add("active");
+  renderActive();
+}));
+// toolbar buttons
+document.getElementById("c-new").onclick=newContact;
+document.getElementById("t-new").onclick=newTask;
+document.getElementById("i-new").onclick=newInvoice;
+document.getElementById("u-new").onclick=newUpdate;
+document.getElementById("reg-new").onclick=newSite;
+// live filters
+["c-search","c-type"].forEach(id=>document.getElementById(id).addEventListener("input",renderContacts));
+["t-search","t-portal","t-owner"].forEach(id=>document.getElementById(id).addEventListener("input",renderTasks));
+["i-portal","i-status"].forEach(id=>document.getElementById(id).addEventListener("input",renderInvoices));
+document.getElementById("u-portal").addEventListener("change",loadUpdates);
+document.getElementById("signinLink").onclick=e=>{e.preventDefault();window.open(API+"/projects/admin/","_blank");toast("Sign in, then come back and hit ↻");};
+
+/* ===================== freshness + boot ===================== */
+const FB=(function(){const el=document.getElementById("freshness"),txt=el.querySelector(".ftext"),btn=el.querySelector(".fbtn");btn.onclick=()=>{el.dataset.state="loading";txt.textContent="Refreshing…";boot();};function stamp(d){return d.toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}return{live:d=>{el.dataset.state="live";txt.textContent="Live · editing on · "+stamp(d);},ro:d=>{el.dataset.state="snapshot";txt.textContent="Read-only · "+stamp(d)+" · sign into admin to edit";}};})();
+async function boot(){
+  const can=await pull();
+  refreshSelects();
+  renderActive();
+  can?FB.live(new Date()):FB.ro(new Date());
+}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&document.getElementById("app").style.display==="block")boot();});
+</script>
+</body>
+</html>

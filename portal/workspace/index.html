@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Workspace — Flamingo Time</title>
+<link rel="icon" href="/assets/icons/favicon-32x32.png" sizes="32x32">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/portal/_shared/themes.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--t-sans);font-weight:300;background:var(--t-paper);color:var(--t-ink);-webkit-font-smoothing:antialiased;line-height:1.55}
+  a{color:var(--t-accent-deep);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px}
+
+  /* theme switcher (demo only — real portal sets theme from the client record) */
+  .demo-switch{background:var(--t-ink);color:var(--t-paper);font-size:12px;padding:7px 0;text-align:center;letter-spacing:.3px}
+  .demo-switch a{color:var(--t-gold);font-weight:500;margin:0 6px}
+  .demo-switch b{color:#fff}
+
+  nav{background:color-mix(in srgb,var(--t-paper) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--t-line);position:sticky;top:0;z-index:20}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px;gap:12px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:500;font-size:15px}
+  .brand .dot{width:26px;height:26px;border-radius:50%;background:var(--t-accent);position:relative;box-shadow:0 0 0 4px var(--t-accent-wash);flex:0 0 auto}
+  .brand .dot::after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--t-paper);top:7px;left:10px}
+  .brand .sb{font-size:11px;color:var(--t-ink-soft);font-weight:400}
+  .navlinks{display:flex;gap:6px;flex-wrap:wrap}
+  .navlinks a{font-size:12.5px;color:var(--t-ink-soft);padding:6px 10px;border-radius:8px}
+  .navlinks a:hover,.navlinks a.on{background:var(--t-accent-wash);color:var(--t-accent-deep);text-decoration:none}
+
+  header.dash{padding:40px 0 8px}
+  .eyebrow{font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t-accent-deep);font-weight:500;margin-bottom:10px}
+  h1{font-family:var(--t-serif);font-weight:300;font-size:clamp(28px,5vw,42px);letter-spacing:-.6px;line-height:1.06}
+  .lede{color:var(--t-ink-soft);font-size:16px;margin-top:10px;max-width:520px}
+
+  .statusband{display:flex;gap:14px;flex-wrap:wrap;margin:26px 0 8px}
+  .sb-item{background:var(--t-card);border:1px solid var(--t-line);border-radius:14px;padding:13px 18px;box-shadow:var(--t-shadow);min-width:150px}
+  .sb-item .l{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--t-ink-soft)}
+  .sb-item .v{font-family:var(--t-serif);font-size:19px;margin-top:3px}
+  .sb-item .v.accent{color:var(--t-accent)}
+
+  section.pad{padding:34px 0}
+  .card{background:var(--t-card);border:1px solid var(--t-line);border-radius:var(--t-radius);box-shadow:var(--t-shadow);overflow:hidden;margin-bottom:22px}
+  .card>h2{font-family:var(--t-serif);font-weight:400;font-size:19px;padding:16px 20px;border-bottom:1px solid var(--t-line-soft);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .card>h2 .meta{font-size:12px;color:var(--t-ink-soft);font-family:var(--t-sans);font-weight:400}
+  .card .body{padding:8px}
+
+  /* start-here checklist (research's highest-impact element) */
+  .starthere{background:linear-gradient(135deg,var(--t-accent-wash),var(--t-card));border:1px solid var(--t-line)}
+  .check{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:10px}
+  .check+.check{border-top:1px solid var(--t-line-soft)}
+  .check .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--t-accent);display:grid;place-items:center;font-size:13px;color:var(--t-accent);flex:0 0 auto;margin-top:1px}
+  .check.done .box{background:var(--t-accent);color:#fff}
+  .check.done .t{color:var(--t-ink-soft);text-decoration:line-through}
+  .check .t{font-size:14px} .check .d{font-size:12.5px;color:var(--t-ink-soft);margin-top:2px}
+
+  .row{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;border-radius:10px}
+  .row+.row{border-top:1px solid var(--t-line-soft)}
+  .row .main{flex:1;min-width:0}
+  .row .t{font-size:14px}
+  .row .m{font-size:11.5px;color:var(--t-ink-soft);margin-top:3px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .pill{font-size:11px;font-weight:500;padding:2px 9px;border-radius:999px}
+  .pill.you{background:var(--t-accent-wash);color:var(--t-accent-deep)}
+  .pill.us{background:var(--t-chip);color:var(--t-ink-soft)}
+  .pill.done{background:var(--t-ok-wash);color:#1d6f4a}
+  .pill.due{background:var(--t-warn-wash);color:var(--t-warn)}
+  .pill.over{background:var(--t-alert-wash);color:var(--t-alert)}
+  .amt{font-family:var(--t-serif);font-size:15px}
+  .btn-pay{background:var(--t-accent);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:999px;border:none;cursor:pointer}
+  .btn-pay:hover{background:var(--t-accent-deep)}
+
+  .msg{padding:13px 15px;border-radius:12px;margin:8px;max-width:78%}
+  .msg.them{background:var(--t-chip);color:var(--t-ink)}
+  .msg.you{background:var(--t-accent);color:#fff;margin-left:auto}
+  .msg .who{font-size:11px;opacity:.7;margin-bottom:3px}
+  .msg .tx{font-size:13.5px}
+
+  footer{padding:34px 0;border-top:1px solid var(--t-line);text-align:center;font-size:12.5px;color:var(--t-ink-soft)}
+  .demo-note{background:var(--t-warn-wash);border:1px solid #f0d3a8;color:#9a5b16;font-size:12.5px;padding:10px 14px;border-radius:10px;margin:18px 0}
+</style>
+</head>
+<body>
+
+<div class="demo-switch">
+  Preview skin: <b id="themeName">Flamingo Time</b> · switch →
+  <a href="?theme=studio">Studio</a><a href="?theme=events">Events</a>
+  <span style="opacity:.6">· one codebase, themed per client</span>
+</div>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span> <div>Flamingo <span style="color:var(--t-accent)">Time</span><div class="sb" id="subbrand">Client workspace</div></div></div>
+    <div class="navlinks">
+      <a class="on" href="#top">Overview</a>
+      <a href="#files">Files</a>
+      <a href="#money">Invoices</a>
+      <a href="#messages">Messages</a>
+    </div>
+  </div>
+</nav>
+
+<header class="dash" id="top">
+  <div class="wrap">
+    <div class="eyebrow" id="kicker">Your project</div>
+    <h1 id="projTitle">Brand site &amp; booking page</h1>
+    <p class="lede" id="projLede">A fast, bold landing page with built-in lead capture — designed, built, and kept current.</p>
+    <div class="statusband">
+      <div class="sb-item"><div class="l">Status</div><div class="v accent" id="stStatus">In progress</div></div>
+      <div class="sb-item"><div class="l">Next milestone</div><div class="v" id="stNext">Design review</div></div>
+      <div class="sb-item"><div class="l">Waiting on</div><div class="v" id="stWaiting">You</div></div>
+    </div>
+  </div>
+</header>
+
+<section class="pad">
+  <div class="wrap">
+
+    <div class="demo-note">✦ Demo workspace with sample data — shows the unified four-pillar portal. The real portal reads each client's live data from the same back office and applies their theme automatically.</div>
+
+    <!-- START HERE -->
+    <div class="card starthere">
+      <h2>👋 Start here <span class="meta">3-min walkthrough</span></h2>
+      <div class="body" id="startHere"></div>
+    </div>
+
+    <!-- STATUS / TASKS -->
+    <div class="card" id="status">
+      <h2>📍 What's happening <span class="meta" id="taskMeta">—</span></h2>
+      <div class="body" id="taskList"></div>
+    </div>
+
+    <!-- FILES -->
+    <div class="card" id="files">
+      <h2>📂 Files &amp; approvals <span class="meta" id="fileMeta">—</span></h2>
+      <div class="body" id="fileList"></div>
+    </div>
+
+    <!-- MONEY -->
+    <div class="card" id="money">
+      <h2>💳 Invoices <span class="meta" id="invMeta">—</span></h2>
+      <div class="body" id="invList"></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="card" id="messages">
+      <h2>💬 Messages <span class="meta">approvals &amp; anything needing a record</span></h2>
+      <div class="body" id="msgList"></div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Flamingo Time LLC · <a href="/portal/">portal home</a> · your workspace is private to you</div>
+</footer>
+
+<script>
+/* ---- theme (demo: from ?theme=; real portal: from the client record) ---- */
+const params=new URLSearchParams(location.search);
+const theme=params.get("theme")||"studio";
+if(theme!=="studio") document.documentElement.setAttribute("data-theme",theme);
+const isEvents = theme==="events";
+
+/* ---- demo content, skinned per theme ---- */
+const DATA = isEvents ? {
+  subbrand:"DIY DJ Party · event workspace", kicker:"Your event",
+  title:"Sarah & Mike's Wedding", lede:"Saturday reception at the Gramercy Mansion — music, requests, and run-of-show, handled end to end.",
+  status:"Confirmed", next:"Song list due", waiting:"You",
+  start:[
+    {done:true,t:"Event confirmed & deposit received",d:"You're locked in for the date."},
+    {done:false,t:"Build your must-play & do-not-play list",d:"Drop songs anytime — link in Files."},
+    {done:false,t:"Share your timeline",d:"Ceremony, first dance, last call — so the night flows."},
+  ],
+  tasks:[
+    {t:"Submit must-play songs",who:"you",pill:"due",pd:"due in 9 days"},
+    {t:"Confirm reception start time",who:"you",pill:"you",pd:""},
+    {t:"Lock the run-of-show",who:"us",pill:"us",pd:"we'll draft it"},
+  ],
+  files:[{t:"Song request link (live)",d:"Add requests anytime"},{t:"Reception timeline template",d:"Fill & return"},{t:"Signed agreement",d:"PDF"}],
+  invoices:[{n:"Deposit",amt:300,paid:true},{n:"Balance — due day-of",amt:900,paid:false}],
+  msgs:[{who:"DIY DJ Party",them:true,tx:"Hi Sarah! Excited for the big day. Drop your must-plays whenever — no rush."},{who:"You",them:false,tx:"Thank you! Adding songs this weekend 🎶"}],
+} : {
+  subbrand:"Flamingo Time Studio · client workspace", kicker:"Your project",
+  title:"Brand site & booking page", lede:"A fast, bold landing page with built-in lead capture — designed, built, and kept current.",
+  status:"In progress", next:"Design review", waiting:"You",
+  start:[
+    {done:true,t:"Kickoff complete",d:"Scope and goals are set."},
+    {done:false,t:"Review the first design",d:"Approve or comment in Files."},
+    {done:false,t:"Send your logo & brand assets",d:"Drop them in Files when ready."},
+  ],
+  tasks:[
+    {t:"Review homepage design v1",who:"you",pill:"due",pd:"due in 3 days"},
+    {t:"Send logo + brand colors",who:"you",pill:"you",pd:""},
+    {t:"Wire up the contact form",who:"us",pill:"us",pd:"in progress"},
+  ],
+  files:[{t:"Homepage design v1.pdf",d:"Awaiting your approval"},{t:"Brand assets (upload)",d:"Drop logo + colors"},{t:"Proposal & scope.pdf",d:"Signed"}],
+  invoices:[{n:"Deposit — 50%",amt:500,paid:true},{n:"On delivery — 50%",amt:500,paid:false}],
+  msgs:[{who:"Flamingo Time",them:true,tx:"First design is up in Files! Take a look and let me know what lands."},{who:"You",them:false,tx:"Looks great — one note on the hero, adding it now."}],
+};
+
+document.getElementById("themeName").textContent = isEvents?"DIY DJ Party":"Flamingo Time";
+document.getElementById("subbrand").textContent = DATA.subbrand;
+document.getElementById("kicker").textContent = DATA.kicker;
+document.getElementById("projTitle").textContent = DATA.title;
+document.getElementById("projLede").textContent = DATA.lede;
+document.getElementById("stStatus").textContent = DATA.status;
+document.getElementById("stNext").textContent = DATA.next;
+document.getElementById("stWaiting").textContent = DATA.waiting;
+
+const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+document.getElementById("startHere").innerHTML = DATA.start.map(c=>`<div class="check ${c.done?'done':''}"><div class="box">${c.done?'✓':''}</div><div><div class="t">${esc(c.t)}</div><div class="d">${esc(c.d)}</div></div></div>`).join("");
+
+const openTasks=DATA.tasks.filter(t=>t.who==="you").length;
+document.getElementById("taskMeta").textContent = openTasks+" waiting on you";
+document.getElementById("taskList").innerHTML = DATA.tasks.map(t=>{
+  const pill = t.pill==="due"?`<span class="pill due">${esc(t.pd)}</span>`:t.who==="us"?'<span class="pill us">on us</span>':'<span class="pill you">on you</span>';
+  return `<div class="row"><div class="main"><div class="t">${esc(t.t)}</div><div class="m">${pill}</div></div></div>`;
+}).join("");
+
+document.getElementById("fileMeta").textContent = DATA.files.length+" items";
+document.getElementById("fileList").innerHTML = DATA.files.map(f=>`<div class="row"><div class="main"><div class="t">${esc(f.t)}</div><div class="m"><span class="pill us">${esc(f.d)}</span></div></div></div>`).join("");
+
+const owed=DATA.invoices.filter(i=>!i.paid).reduce((s,i)=>s+i.amt,0);
+document.getElementById("invMeta").textContent = owed?("$"+owed+" outstanding"):"Paid in full";
+document.getElementById("invList").innerHTML = DATA.invoices.map(i=>`<div class="row"><div class="main"><div class="t">${esc(i.n)} · <span class="amt">$${i.amt}</span></div><div class="m">${i.paid?'<span class="pill done">paid</span>':'<span class="pill due">due</span>'}</div></div>${i.paid?'':'<button class="btn-pay">Pay now</button>'}</div>`).join("");
+
+document.getElementById("msgList").innerHTML = DATA.msgs.map(m=>`<div class="msg ${m.them?'them':'you'}"><div class="who">${esc(m.who)}</div><div class="tx">${esc(m.tx)}</div></div>`).join("");
+</script>
+</body>
+</html>

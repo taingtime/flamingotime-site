@@ -1,0 +1,60 @@
+/* ============================================================================
+   Flamingo Time — unified portal theme system
+   ----------------------------------------------------------------------------
+   ONE portal, branded faces. The portal app sets data-theme on <html> per the
+   client's sub-brand (from portals.theme / dj_clients.theme). Every surface
+   styles against these tokens, so a theme switch re-skins the whole portal
+   without a separate codebase.
+
+   Themes:
+     (default)        Flamingo Time — Go-Time Modernism (coral/navy/gold/cream)
+     data-theme="events"   DIY DJ Party — warmer, nightlife energy
+     data-theme="studio"   Web/brand work — same as default, explicit
+   Each token has a LITERAL fallback so popped-out / theme-less renders never break.
+   ============================================================================ */
+
+:root{
+  color-scheme: light;
+  /* Flamingo Time default (Go-Time Modernism) */
+  --t-accent:#f6587d;        /* flamingo */
+  --t-accent-deep:#d9376e;   /* deep rose */
+  --t-accent-wash:#fff0f5;
+  --t-gold:#f2b441;
+  --t-ink:#212e47;
+  --t-ink-soft:#566079;
+  --t-paper:#faf3eb;         /* warm cream */
+  --t-card:#ffffff;
+  --t-line:#e8ddcf;
+  --t-line-soft:#f1e8da;
+  --t-chip:#f4ece0;
+  --t-ok:#1d9d6f; --t-ok-wash:#e7f7ef;
+  --t-warn:#d4922a; --t-warn-wash:#fdf1e3;
+  --t-alert:#d23a3a; --t-alert-wash:#fdecec;
+  --t-shadow:0 2px 14px rgba(33,46,71,.08);
+  --t-shadow-lg:0 12px 40px rgba(33,46,71,.14);
+  --t-radius:16px; --t-radius-sm:10px;
+  --t-sans:'Poppins',ui-rounded,'Segoe UI',system-ui,sans-serif;
+  --t-serif:'Fraunces',Georgia,serif;
+  --t-hero:linear-gradient(135deg,#fff0f5 0%,#faf3eb 60%);
+  --t-name:"Flamingo Time";
+}
+
+/* ---- Events skin (DIY DJ Party) ------------------------------------------ */
+html[data-theme="events"]{
+  --t-accent:#ff4d8d;        /* hotter pink */
+  --t-accent-deep:#c01f63;
+  --t-accent-wash:#ffe9f2;
+  --t-gold:#ffc24b;
+  --t-ink:#1a1430;           /* deep night plum */
+  --t-ink-soft:#5b5274;
+  --t-paper:#fbf6fb;
+  --t-card:#ffffff;
+  --t-line:#ecdcec;
+  --t-line-soft:#f5ebf5;
+  --t-chip:#f4e9f4;
+  --t-hero:linear-gradient(135deg,#ffe9f2 0%,#f3e9fb 55%,#fbf6fb 100%);
+  --t-name:"DIY DJ Party";
+}
+
+/* ---- Studio skin (web/brand) — explicit alias of default ----------------- */
+html[data-theme="studio"]{ --t-name:"Flamingo Time Studio"; }

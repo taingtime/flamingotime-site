@@ -1,0 +1,3 @@
+# portal.flamingotimellc.com should land on the portal experience, not the marketing root.
+https://portal.flamingotimellc.com/  /portal/  200
+https://portal.flamingotimellc.com/*  /portal/:splat  200

@@ -1,11 +1,10 @@
 [build]
   publish = "."
 
-[[redirects]]
-  from = "/portal/*"
-  to = "https://portal.flamingotimellc.com/:splat"
-  status = 301
-  force = true
+# NOTE: The portal currently serves from /portal/* on this site. Once
+# portal.flamingotimellc.com is provisioned (migration Stage B), add a redirect
+# here pointing /portal/* → the subdomain. Do NOT add it before the subdomain
+# exists, or the portal pages redirect into a void.
 
 # /gotime is gated client-side (password) + noindex; served as a static page here.
 [[headers]]

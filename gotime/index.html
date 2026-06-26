@@ -195,6 +195,7 @@
     </div>
     <div class="topbtns">
       <button class="tbtn" id="customizeBtn">⚙ Customize</button>
+      <a class="tbtn" href="/directory/">📇 Directory</a>
       <a class="tbtn" href="https://portal.flamingotimellc.com" target="_blank" rel="noopener">Portals ↗</a>
       <a class="tbtn solid" href="/" >← Site</a>
       <button class="tbtn" id="lockBtn">Lock</button>
@@ -422,7 +423,7 @@ function render(state){
 function fill(id,arr,empty,cid){document.getElementById(id).innerHTML=arr.length?arr.map(taskRow).join(""):`<div class="empty">${empty}</div>`;if(cid)document.getElementById(cid).textContent=arr.length;}
 
 const BOARD=[
- {h:"Source of truth",items:[{t:"This command center",u:"#",ico:"🦩",tag:"keep"},{t:"Portal admin (all clients)",u:API+"/projects/admin/",ico:"🛠️",tag:"keep"},{t:"Client portals",u:"https://portal.flamingotimellc.com",ico:"📁",tag:"keep"}]},
+ {h:"Source of truth",items:[{t:"This command center",u:"#",ico:"🦩",tag:"keep"},{t:"Contact Directory (475)",u:"/directory/",ico:"📇",tag:"keep"},{t:"Portal admin (all clients)",u:API+"/projects/admin/",ico:"🛠️",tag:"keep"},{t:"Client portals",u:"https://portal.flamingotimellc.com",ico:"📁",tag:"keep"}]},
  {h:"Client portals",items:[{t:"James Medows",u:API+"/projects/james-medows/",ico:"⚖️",tag:"gate"},{t:"Erin (wedding)",u:API+"/projects/erin/",ico:"💍",tag:"gate"},{t:"BAFA",u:API+"/projects/bafa/",ico:"🎨",tag:"gate"},{t:"Stack & Subs",u:API+"/projects/stack-setup/",ico:"⚙️",tag:"gate"}]},
  {h:"Front doors",items:[{t:"Flamingo Time site",u:"/",ico:"🌐",tag:"keep"},{t:"DIY DJ Party (events)",u:"https://diydjparty.com",ico:"🎧",tag:"keep"},{t:"UniversiTube",u:"https://universitube.com",ico:"▶️",tag:"keep"}]},
  {h:"Strategy & sites",items:[{t:"Growth Engine cockpit",u:"#",ico:"🚀",tag:"keep"},{t:"Sites command center",u:"#",ico:"🌐",tag:"keep"},{t:"Smalltimore",u:"#",ico:"🦀",tag:"keep"}]},

@@ -199,7 +199,70 @@ const DATA = isEvents ? {
   msgs:[{who:"Flamingo Time",them:true,tx:"First design is up in Files! Take a look and let me know what lands."},{who:"You",them:false,tx:"Looks great — one note on the hero, adding it now."}],
 };
 
-document.getElementById("themeName").textContent = isEvents?"DIY DJ Party":"Flamingo Time";
+const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ============================================================================
+   LIVE DATA — when ?slug=<client> is present, read the real workspace from the
+   (CORS-enabled) back office and map it into the same render shape. Theme comes
+   from the client record. No slug → the themed demo above. Auth is the client's
+   own portal cookie (credentials:include); if not signed in, the back office
+   redirects/401s and we keep the demo so the page never looks broken.
+   ============================================================================ */
+const BACKOFFICE="https://yongtaing.com";
+const slug=params.get("slug");
+
+async function loadLive(slug){
+  const opt={credentials:"include",cache:"no-store"};
+  // portal-check returns role + the portal metadata (display_name, status, theme, notes…)
+  const chk=await fetch(`${BACKOFFICE}/api/portal-check?slug=${encodeURIComponent(slug)}`,opt);
+  if(!chk.ok) throw new Error("not authorized");
+  const meta=(await chk.json()).portal||{};
+  const [tk,iv,fl] = await Promise.allSettled([
+    fetch(`${BACKOFFICE}/api/portal-tasks?slug=${encodeURIComponent(slug)}`,opt).then(r=>r.json()),
+    fetch(`${BACKOFFICE}/api/portal-invoices?slug=${encodeURIComponent(slug)}`,opt).then(r=>r.json()),
+    fetch(`${BACKOFFICE}/api/portal-files?slug=${encodeURIComponent(slug)}`,opt).then(r=>r.json()),
+  ]);
+  const tasks=(tk.status==="fulfilled"&&tk.value.tasks)||[];
+  const invoices=(iv.status==="fulfilled"&&iv.value.invoices)||[];
+  const files=(fl.status==="fulfilled"&&(fl.value.files||fl.value.items))||[];
+  // theme from the record
+  const theme=meta.theme||"studio";
+  if(theme!=="studio") document.documentElement.setAttribute("data-theme",theme);
+  // map into render shape
+  return {
+    subbrand:(theme==="events"?"DIY DJ Party":"Flamingo Time Studio")+" · client workspace",
+    kicker: theme==="events"?"Your event":"Your project",
+    title: meta.display_name||slug,
+    lede: meta.lede||(meta.notes||"").split("\n")[0]||"Your workspace.",
+    status: meta.status==="active"?"In progress":(meta.status||"—"),
+    next: (meta.notes||"").split("\n")[0]||"—",
+    waiting: tasks.some(t=>t.owner!=="yong"&&!t.done&&!t.response_text)?"You":"Us",
+    start: [], // Start-Here is portal-config; omitted on live until seeded
+    tasks: tasks.filter(t=>!t.done).slice(0,8).map(t=>({
+      t:t.title, who:t.owner==="yong"?"us":"you",
+      pill: t.due_date && new Date(t.due_date) < Date.now() ? "due" : (t.owner==="yong"?"us":"you"),
+      pd: t.due_date ? ("due "+new Date(t.due_date).toLocaleDateString([], {month:"short",day:"numeric"})) : "",
+    })),
+    files: files.slice(0,8).map(f=>({t:f.name||f.title||"File", d:f.note||f.kind||"file"})),
+    invoices: invoices.filter(v=>v.status!=="void").map(v=>({
+      n:v.invoice_number||"Invoice", amt:Number(v.total)||0,
+      paid:(Number(v.paid_amount)||0)>=(Number(v.total)||0),
+    })),
+    msgs: [{who:"Flamingo Time",them:true,tx:"Your live messages appear here. Open the full Messages view for the thread."}],
+  };
+}
+
+let RENDER = DATA;  // default to demo
+(async()=>{
+  if(slug){
+    try{ RENDER = await loadLive(slug); }
+    catch(e){ RENDER = DATA; document.querySelector(".demo-note").innerHTML = "✦ Showing a sample — sign in to your workspace link to see your live project."; }
+  }
+  paint(RENDER);
+})();
+
+function paint(DATA){
+document.getElementById("themeName").textContent = (document.documentElement.getAttribute("data-theme")==="events")?"DIY DJ Party":"Flamingo Time";
 document.getElementById("subbrand").textContent = DATA.subbrand;
 document.getElementById("kicker").textContent = DATA.kicker;
 document.getElementById("projTitle").textContent = DATA.title;
@@ -208,9 +271,7 @@ document.getElementById("stStatus").textContent = DATA.status;
 document.getElementById("stNext").textContent = DATA.next;
 document.getElementById("stWaiting").textContent = DATA.waiting;
 
-const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-document.getElementById("startHere").innerHTML = DATA.start.map(c=>`<div class="check ${c.done?'done':''}"><div class="box">${c.done?'✓':''}</div><div><div class="t">${esc(c.t)}</div><div class="d">${esc(c.d)}</div></div></div>`).join("");
+document.getElementById("startHere").innerHTML = (DATA.start&&DATA.start.length) ? DATA.start.map(c=>`<div class="check ${c.done?'done':''}"><div class="box">${c.done?'✓':''}</div><div><div class="t">${esc(c.t)}</div><div class="d">${esc(c.d)}</div></div></div>`).join("") : `<div class="check"><div class="box"></div><div><div class="t">Welcome — your workspace is set up</div><div class="d">Check your tasks below for anything waiting on you.</div></div></div>`;
 
 const openTasks=DATA.tasks.filter(t=>t.who==="you").length;
 document.getElementById("taskMeta").textContent = openTasks+" waiting on you";
@@ -227,6 +288,7 @@ document.getElementById("invMeta").textContent = owed?("$"+owed+" outstanding"):
 document.getElementById("invList").innerHTML = DATA.invoices.map(i=>`<div class="row"><div class="main"><div class="t">${esc(i.n)} · <span class="amt">$${i.amt}</span></div><div class="m">${i.paid?'<span class="pill done">paid</span>':'<span class="pill due">due</span>'}</div></div>${i.paid?'':'<button class="btn-pay">Pay now</button>'}</div>`).join("");
 
 document.getElementById("msgList").innerHTML = DATA.msgs.map(m=>`<div class="msg ${m.them?'them':'you'}"><div class="who">${esc(m.who)}</div><div class="tx">${esc(m.tx)}</div></div>`).join("");
+} /* end paint() */
 </script>
 </body>
 </html>
